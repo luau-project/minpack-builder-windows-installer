@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <!-- load project definitions -->
+    <?include minpack-builder.wxi?>
+
+    <!-- This fragment implements the remember property pattern for compiler @compiler_id@ -->
+    <Fragment>
+
+        <!-- Define the property -->
+        <Property Id="$(@compiler_id@ChoiceProperty)" Secure="yes" Value="$(@compiler_id@ChoicePropertyDefaultValue)">
+            <RegistrySearch
+                Id="regsearch_$(@compiler_id@ChoiceProperty)"
+                Root="$(@compiler_id@ChoicePropertyRegistryRoot)"
+                Key="$(@compiler_id@ChoicePropertyRegistryKey)"
+                Name="$(@compiler_id@ChoicePropertyRegistryName)"
+                Type="raw"/>
+        </Property>
+        
+        <!-- Component to store the compiler choice on registry -->
+        <Component Id="@compiler_id@ChoicePropertyRegistry" Guid="$(@compiler_id@ChoicePropertyRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(@compiler_id@ChoicePropertyRegistryRoot)"
+                Key="$(@compiler_id@ChoicePropertyRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="$(@compiler_id@ChoicePropertyRegistryName)"
+                    Value="@compiler_id@"/>
+            </RegistryKey>
+        </Component>
+        
+        <!-- Custom actions to read the property from / save the property to registry -->
+        <CustomAction 
+            Id="SaveChoice.@compiler_id@"
+            Property="CMDLINE_$(@compiler_id@ChoiceProperty)"
+            Value="[$(@compiler_id@ChoiceProperty)]"
+            Execute="firstSequence"/>
+        <CustomAction 
+            Id="SetChoice.@compiler_id@.FromCmdLine"
+            Property="$(@compiler_id@ChoiceProperty)"
+            Value="[CMDLINE_$(@compiler_id@ChoiceProperty)]" 
+            Execute="firstSequence"/>
+        <InstallUISequence>
+            <Custom Action="SaveChoice.@compiler_id@" Before="AppSearch"/>
+            <Custom Action="SetChoice.@compiler_id@.FromCmdLine" After="AppSearch" Condition="CMDLINE_$(@compiler_id@ChoiceProperty)"/>
+        </InstallUISequence>
+        <InstallExecuteSequence>
+            <Custom Action="SaveChoice.@compiler_id@" Before="AppSearch"/>
+            <Custom Action="SetChoice.@compiler_id@.FromCmdLine" After="AppSearch" Condition="CMDLINE_$(@compiler_id@ChoiceProperty)"/>
+        </InstallExecuteSequence>
+        
+        <!-- Define a feature to store the property value on registry -->
+        <Feature Id="@compiler_id@ChoiceOnReg" Title="Save @compiler_id@ choice on registry" Level="1">
+            <ComponentRef Id="@compiler_id@ChoicePropertyRegistry"/>
+        </Feature>
+        
+    </Fragment>
+</Wix>
