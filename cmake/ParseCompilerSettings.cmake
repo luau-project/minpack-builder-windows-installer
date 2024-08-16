@@ -54,7 +54,7 @@ function(__write_compiler_config_wxi compiler_id compiler_name compiler_version 
     
 endfunction()
 
-function(parse_compiler_settings_from_json json_file)
+function(parse_compiler_settings_from_json json_file compiler_ids)
     file(READ "${json_file}" json_file_content)
 
     string(JSON _json_field_var
@@ -76,6 +76,8 @@ function(parse_compiler_settings_from_json json_file)
     if (_data_length_err)
         message(FATAL_ERROR "${_data_length_err}")
     endif()
+
+    set(_compiler_ids "")
     
     set(_index "0")
     while("${_index}" LESS "${_data_length}")
@@ -99,11 +101,28 @@ function(parse_compiler_settings_from_json json_file)
         __write_compiler_config_wxi("${compiler_id}" "${compiler_name}" "${compiler_version}" "${compiler_hostarch}")
 
         configure_file(
-            cmake/CompilerChoiceProperty.wxs.in
+            templates/CompilerChoiceProperty.wxs.in
             "${CMAKE_BINARY_DIR}/wixtoolset-v5/${compiler_id}ChoiceProperty.wxs"
             @ONLY
             NEWLINE_STYLE WIN32)
 
+        if ("${_index}" STREQUAL "0")
+            configure_file(
+                templates/DefaultCompilerChoiceProperty.wxs.in
+                "${CMAKE_BINARY_DIR}/wixtoolset-v5/DefaultCompilerChoiceProperty.wxs"
+                @ONLY
+                NEWLINE_STYLE WIN32)
+        endif()
+
+        list(APPEND _compiler_ids "${compiler_id}")
+
         MATH(EXPR _index "${_index} + 1")
     endwhile()
+
+    append_blank_line_on_project_config_wxi()
+    append_comment_on_project_config_wxi("start of extra settings")
+    append_define_on_project_config_wxi("CompilerChoices" "${_compiler_ids}")
+    append_comment_on_project_config_wxi("end of extra settings")
+
+    set(${compiler_ids} "${_compiler_ids}" PARENT_SCOPE)
 endfunction()

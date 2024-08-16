@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <!-- Compiler choice property to be used by the GUI. -->
+        <!-- When it is not stored on registry, the default value -->
+        <!-- for this property comes from the first entry of the -->
+        <!-- PROJECT_SETTINGS json array. -->
+        <Property Id="COMPILERCHOICEPROPERTY" Secure="yes" Value="$(@compiler_id@PropertyDefaultValue)">
+            <RegistrySearch 
+                Id="regsearch_COMPILERCHOICEPROPERTY"
+                Root="$(@compiler_id@PropertyRegistryRoot)"
+                Key="$(@compiler_id@PropertyRegistryKey)"
+                Name="$(@compiler_id@PropertyRegistryName)"
+                Type="raw"/>
+        </Property>
+    </Fragment>
+</Wix>
