@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <!-- Load project definitions -->
+    <?include MinpackBuilder.wxi?>
+
+    <Fragment>
+        <DirectoryRef Id="@compiler_id@InstallDir">
+            <Component Id="@compiler_id@EnvironmentVariableComponent" Guid="$(@compiler_id@EnvironmentVariableGuid)">
+                <Environment Id="@compiler_id@EnvironmentVariable"
+                    Name="MINPACK_BUILDER_ACTIVE_COMPILER_INSTALL_DIR"
+                    Value="[@compiler_id@InstallDir]"
+                    Action="set"
+                    Permanent="no"
+                    System="yes"
+                    Part="last"/>
+            </Component>
+            <Component Id="@compiler_id@EnvironmentVariableOnPathComponent" Guid="$(@compiler_id@EnvironmentVariableOnPathGuid)">
+                <Environment Id="@compiler_id@AddOnPathEnvironmentVariable"
+                    Name="PATH"
+                    Value="%MINPACK_BUILDER_ACTIVE_COMPILER_INSTALL_DIR%bin"
+                    Action="set"
+                    Permanent="no"
+                    System="yes"
+                    Part="last"/>
+            </Component>
+            <Component Id="@compiler_id@CMakePrefixPathComponent" Guid="$(@compiler_id@CMakePrefixPathGuid)">
+                <Environment Id="@compiler_id@CMakePrefixPathEnvironmentVariable"
+                    Name="CMAKE_PREFIX_PATH"
+                    Value="%MINPACK_BUILDER_ACTIVE_COMPILER_INSTALL_DIR%"
+                    Action="set"
+                    Permanent="no"
+                    System="yes"
+                    Part="last"/>
+            </Component>
+        </DirectoryRef>
+
+        <ComponentGroup Id="@compiler_id@EnvironmentVariablesComponentGroup">
+            <ComponentRef Id="@compiler_id@EnvironmentVariableComponent"/>
+            <ComponentRef Id="@compiler_id@EnvironmentVariableOnPathComponent"/>
+            <ComponentRef Id="@compiler_id@CMakePrefixPathComponent"/>
+        </ComponentGroup>
+
+        <Feature Id="@compiler_id@EnvVars" Title="Set Environment Variables for $(@compiler_id@DisplayText)" Level="1">
+            <ComponentGroupRef Id="@compiler_id@EnvironmentVariablesComponentGroup"/>
+        </Feature>
+    </Fragment>
+</Wix>

@@ -61,10 +61,11 @@ function(harvest_directory directory out_file wix_includes wix_path_var director
     get_tabs_indentation(2 dir_ref_id_indentation)
     get_tabs_indentation(3 components_indentation)
 
-    file_append_line(${__target_file} "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>")
+    file_append_line(${__target_file} "<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
     file_append_line(${__target_file} "<Wix xmlns=\"http://wixtoolset.org/schemas/v4/wxs\">")
 
     file_append_line(${__target_file} "")
+    file_append_line(${__target_file} "${includes_indentation}<!-- Load definitions -->")
     foreach(inc ${wix_includes})
         file_append_line(${__target_file} "${includes_indentation}<?include ${inc} ?>")
     endforeach()

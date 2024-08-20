@@ -28,16 +28,27 @@ function(__write_compiler_config_wxi compiler_id compiler_name compiler_version 
         "EnvironmentVariable"
         "EnvironmentVariableOnPath"
         "CMakePrefixPath"
-        "Registry"
+        "ListOfInstalledCompilersRegistry"
+        "NumberOfInstalledCompilersRegistry"
+        "NameRegistry"
         "VersionRegistry"
         "HostArchRegistry"
-        "RegistryInstallDir")
+        "InstallDirRegistry")
     
     append_blank_line_on_project_config_wxi()
     append_comment_on_project_config_wxi("start of ${compiler_id} settings")
     append_define_on_project_config_wxi("${compiler_id}CompilerName" "${compiler_name}")
     append_define_on_project_config_wxi("${compiler_id}Version" "${compiler_version}")
     append_define_on_project_config_wxi("${compiler_id}HostArch" "${compiler_hostarch}")
+    append_define_on_project_config_wxi("${compiler_id}DisplayText" "\$(${compiler_id}CompilerName) \$(${compiler_id}Version) \$(${compiler_id}HostArch)")
+
+    if (NOT DEFINED "${compiler_id}_BINARIES_DIR")
+        message(FATAL_ERROR "Parameter \"${compiler_id}_BINARIES_DIR\" not defined. You must supply a directory for the binaries of ${compiler_id} as a cmake parameter: \"-D${compiler_id}_BINARIES_DIR=path/to/binaries\"")
+    endif()
+
+    get_filename_component(__compiler_binaries_dir_name "${${compiler_id}_BINARIES_DIR}" NAME)
+    append_define_on_project_config_wxi("${compiler_id}BinariesDir" "binaries\\${compiler_id}\\${__compiler_binaries_dir_name}")
+
     foreach(__guid_for_prop ${__guids_for_compiler_properties})
         append_define_guid_on_project_config_wxi("${compiler_id}${__guid_for_prop}Guid")
     endforeach()
@@ -45,13 +56,43 @@ function(__write_compiler_config_wxi compiler_id compiler_name compiler_version 
     string(TOUPPER "${compiler_id}" compiler_id_upper)
     append_define_on_project_config_wxi("${compiler_id}ChoiceProperty" "${compiler_id_upper}")
     append_define_on_project_config_wxi("${compiler_id}ChoicePropertyDefaultValue" "${compiler_id}")
-    append_define_on_project_config_wxi("${compiler_id}ChoicePropertyRegistryRoot" "HKLM")
-    append_define_on_project_config_wxi("${compiler_id}ChoicePropertyRegistryKey" [[Software\$(Manufacturer)\$(PackageName)]])
-    append_define_on_project_config_wxi("${compiler_id}ChoicePropertyRegistryName" "ActiveCompiler")
     append_define_guid_on_project_config_wxi("${compiler_id}ChoicePropertyRegistryGuid")
 
     append_comment_on_project_config_wxi("end of ${compiler_id} settings")
     
+endfunction()
+
+function(__write_installed_compiler_config_wxi compiler_ids)
+    
+    set(__guids_for_compiler_properties
+        "IdRegistry"
+        "NameRegistry"
+        "VersionRegistry"
+        "HostArchRegistry"
+        "InstallDirRegistry")
+    
+    list(LENGTH compiler_ids number_of_compilers)
+
+    foreach(compiler_id ${compiler_ids})
+        set(c_index_other "0")
+        while("${c_index_other}" LESS "${number_of_compilers}")
+
+            list(GET compiler_ids "${c_index_other}" c_id_other)
+
+            foreach(__guid_for_prop ${__guids_for_compiler_properties})
+                append_define_guid_on_project_config_wxi("${c_id_other}${__guid_for_prop}On${compiler_id}Guid")
+            endforeach()
+
+            configure_file(
+                templates/ListOfInstalledCompilersOnWindowsRegistry.wxs.in
+                "${WIXTOOLSET_PROJECT_DIR}/${c_id_other}InstalledCompilerOn${compiler_id}Selection.wxs"
+                @ONLY
+                NEWLINE_STYLE WIN32)
+
+            MATH(EXPR c_index_other "${c_index_other} + 1")
+        endwhile()
+    endforeach()
+
 endfunction()
 
 function(parse_compiler_settings_from_json json_file compiler_ids)
@@ -78,6 +119,7 @@ function(parse_compiler_settings_from_json json_file compiler_ids)
     endif()
 
     set(_compiler_ids "")
+    set(_compiler_ids_upper "")
     
     set(_index "0")
     while("${_index}" LESS "${_data_length}")
@@ -94,6 +136,15 @@ function(parse_compiler_settings_from_json json_file compiler_ids)
         endif()
 
         __get_compiler_setting("${json_file_content}" "${_index}" "CompilerId" "STRING" compiler_id)
+
+        string(TOUPPER "${compiler_id}" compiler_id_upper)
+        if ("${compiler_id_upper}" IN_LIST _compiler_ids_upper)
+            message(FATAL_ERROR "Compiler id is case-insensitive. An entry for \"${compiler_id}\" is already defined. Please, choose a different compiler id for the compiler at index ${_index} on file \"${json_file}\".")
+        else()
+            list(APPEND _compiler_ids "${compiler_id}")
+            list(APPEND _compiler_ids_upper "${compiler_id_upper}")
+        endif()
+
         __get_compiler_setting("${json_file_content}" "${_index}" "CompilerName" "STRING" compiler_name)
         __get_compiler_setting("${json_file_content}" "${_index}" "Version" "STRING" compiler_version)
         __get_compiler_setting("${json_file_content}" "${_index}" "HostArch" "STRING" compiler_hostarch)
@@ -102,26 +153,27 @@ function(parse_compiler_settings_from_json json_file compiler_ids)
 
         configure_file(
             templates/CompilerChoiceProperty.wxs.in
-            "${CMAKE_BINARY_DIR}/wixtoolset-v5/${compiler_id}ChoiceProperty.wxs"
+            "${WIXTOOLSET_PROJECT_DIR}/${compiler_id}ChoiceProperty.wxs"
             @ONLY
             NEWLINE_STYLE WIN32)
 
         if ("${_index}" STREQUAL "0")
             configure_file(
-                templates/DefaultCompilerChoiceProperty.wxs.in
-                "${CMAKE_BINARY_DIR}/wixtoolset-v5/DefaultCompilerChoiceProperty.wxs"
+                templates/ActiveCompilerChoiceProperty.wxs.in
+                "${WIXTOOLSET_PROJECT_DIR}/ActiveCompilerChoiceProperty.wxs"
                 @ONLY
                 NEWLINE_STYLE WIN32)
         endif()
-
-        list(APPEND _compiler_ids "${compiler_id}")
 
         MATH(EXPR _index "${_index} + 1")
     endwhile()
 
     append_blank_line_on_project_config_wxi()
     append_comment_on_project_config_wxi("start of extra settings")
-    append_define_on_project_config_wxi("CompilerChoices" "${_compiler_ids}")
+    append_define_on_project_config_wxi("ListOfInstalledCompilers" "${_compiler_ids}")
+    append_define_on_project_config_wxi("NumberOfInstalledCompilers" "${_data_length}")
+    __write_installed_compiler_config_wxi("${_compiler_ids}")
+
     append_comment_on_project_config_wxi("end of extra settings")
 
     set(${compiler_ids} "${_compiler_ids}" PARENT_SCOPE)

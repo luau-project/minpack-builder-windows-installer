@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <!-- Load project definitions -->
+    <?include MinpackBuilder.wxi?>
+    
+    <Fragment>
+        <ComponentGroup Id="@compiler_id@InstalledCompilersComponentGroup">
+            <?foreach Cidother in $(ListOfInstalledCompilers)?>
+                <ComponentRef Id="$(Cidother)IdRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(Cidother)NameRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(Cidother)VersionRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(Cidother)HostArchRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(Cidother)InstallDirRegistryOn@compiler_id@"/>
+            <?endforeach ?>
+        </ComponentGroup>
+
+        <Feature Id="@compiler_id@InstalledCompilers" Title="Compiler entries on registry due to $(@compiler_id@DisplayText) installation" Level="1">
+            <ComponentGroupRef Id="@compiler_id@InstalledCompilersComponentGroup"/>
+        </Feature>
+    </Fragment>
+</Wix>

@@ -4,6 +4,18 @@ find_program(
 	REQUIRED
 )
 
+find_program(
+	PANDOC_PROG
+	NAME pandoc
+	REQUIRED
+)
+
+find_program(
+	WEASYPRINT_PROG
+	NAME weasyprint
+	REQUIRED
+)
+
 function(get_guid guid_var)
 	execute_process(
 		COMMAND ${UUIDGEN_PROG}
@@ -14,8 +26,23 @@ function(get_guid guid_var)
 	set(${guid_var} "${__guid}" PARENT_SCOPE)
 endfunction()
 
+function(convert_to_rtf in_file out_file title)
+	execute_process(
+		COMMAND ${PANDOC_PROG} "-s" "${in_file}" "-o" "${out_file}" "--metadata" "title=${title}"
+		OUTPUT_VARIABLE __rtf_output
+	)
+endfunction()
+
+function(convert_to_pdf in_file out_file title)
+	execute_process(
+		COMMAND ${PANDOC_PROG} "-s" "${in_file}" "-o" "${out_file}" "--pdf-engine=weasyprint" "--metadata" "title=${title}"
+		OUTPUT_VARIABLE __pdf_output
+	)
+endfunction()
+
 function(get_tabs_indentation num out_var)
-    string(REPEAT "\t" ${num} __out_var)
+	MATH(EXPR __repetition "${num} * 4")
+    string(REPEAT " " ${__repetition} __out_var)
     set(${out_var} ${__out_var} PARENT_SCOPE)
 endfunction()
 

@@ -6,13 +6,15 @@ The goal of this repository is to provide a Windows Installer (.msi) to the [MIN
 
 > [!IMPORTANT]
 > 
-> This project is still in early stages, but might evolve quickly, because *proof of concepts* (.msi) packages containing most expected features were worked locally.
+> This project is currently in alpha stage, but the generated files are able to build a working installer. However, beware that you might find bugs. An improved documentation is coming soon.
 
 ## Table of Contents
 
 * [How](#how)
 * [Development](#development)
     * [How to insert binaries for a compiler](#how-to-insert-binaries-for-a-compiler)
+    * [How to generate the WiX Toolset project](#how-to-generate-the-wix-toolset-project)
+    * [Building the MSI installer](#building-the-msi-installer)
 
 ## How
 
@@ -50,14 +52,35 @@ Each element of the array must provide an unique ```CompilerId``` field to ident
 
 ### How to generate the WiX Toolset project
 
-In the project directory, run
+First, these are some of the required tools used by the project that need to be available on your command prompt (or terminal):
 
-```bash
-cmake -DPROJECT_SETTINGS=path/to/settings.json -S . -B build
-```
-
-If the command succeed, the source files for the ```WiX Toolset``` project will be stored at ```build/wixtoolset-v5``` directory.
+* cmake (&gt; 3.20)
+* uuidgen (comes from Visual Studio installation -- or MSYS2 -- on Windows, but is also available on Linux)
+* pandoc
+* weasyprint
 
 > [!IMPORTANT]
 > 
-> At the moment, being in pre-alpha stage, the generated source files are not capable to build a working project. We are currently working on the project generation from CMake for several compiler toolchains.
+> For each ```CompilerId``` entry in the configuration file above, you must also provide a parameter to tell where binaries are stored for that compiler. For instance, assuming the configuration file cited, ```-DGFortranUCRTSixFour_BINARIES_DIR=path/to/gfortran/binaries``` would tell the directory holding gfortran binaries built by ```Minpack Builder```. Moreover, directories holding the source code for both ```Minpack``` and  ```Minpack Builder``` are needed, respectively (```-DMINPACK_SOURCES=path/to/minpack/source-code``` and ```-DMINPACK_BUILDER_SOURCES=path/to/minpack-builder/source-code```). The version of ```Minpack Builder``` library is also needed (```-DMINPACK_BUILDER_VERSION=1.1.0```).
+
+In the project directory, run
+
+```bash
+cmake -DPROJECT_SETTINGS=path/to/settings.json -DGFortranUCRTSixFour_BINARIES_DIR=path/to/gfortran/binaries -DLLVMFlangNewMsvcLike_BINARIES_DIR=path/to/llvm-flang-msvc-like/binaries -DMINPACK_SOURCES=path/to/minpack/source-code -DMINPACK_BUILDER_SOURCES=path/to/minpack-builder/source-code -DMINPACK_BUILDER_VERSION=1.1.0 -S . -B build
+```
+
+If the command succeed, the source files for the ```WiX Toolset``` project will be stored at ```build/wixtoolset-v5```.
+
+### Building the MSI installer
+
+> [!IMPORTANT]
+> 
+> For this step, you need the ```wix``` command line program on a Windows machine. Visit [https://wixtoolset.org/](https://wixtoolset.org/) for instructions on how to install it.
+
+Assuming you got this far, you were able to generate the ```WiX Toolset``` project, and it is stored on the directory ```build/wixtoolset-v5```.
+
+Then, using a command prompt on a Windows machine, you can now change directory to ```build/wixtoolset-v5``` and execute the file ```msi.bat```, which builds the MSI package.
+
+```cmd
+cd build\wixtoolset-v5 && msi.bat
+``` 

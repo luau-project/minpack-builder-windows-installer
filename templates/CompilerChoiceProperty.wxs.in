@@ -2,18 +2,20 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
     <!-- Load project definitions -->
-    <?include minpack-builder.wxi?>
+    <?include MinpackBuilder.wxi?>
 
-    <!-- This fragment implements the remember property pattern for compiler @compiler_id@ -->
+    <!-- This fragment implements a modified version -->
+    <!-- of the remember property pattern -->
+    <!-- for @compiler_id@ -->
     <Fragment>
 
         <!-- Define the property -->
         <Property Id="$(@compiler_id@ChoiceProperty)" Secure="yes" Value="$(@compiler_id@ChoicePropertyDefaultValue)">
             <RegistrySearch
                 Id="regsearch_$(@compiler_id@ChoiceProperty)"
-                Root="$(@compiler_id@ChoicePropertyRegistryRoot)"
-                Key="$(@compiler_id@ChoicePropertyRegistryKey)"
-                Name="$(@compiler_id@ChoicePropertyRegistryName)"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)"
+                Name="$(ActiveCompilerChoicePropertyRegistryName)"
                 Type="raw"/>
         </Property>
         
@@ -21,13 +23,87 @@
         <Component Id="@compiler_id@ChoicePropertyRegistry" Guid="$(@compiler_id@ChoicePropertyRegistryGuid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
-                Root="$(@compiler_id@ChoicePropertyRegistryRoot)"
-                Key="$(@compiler_id@ChoicePropertyRegistryKey)">
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
                 <RegistryValue Type="string"
-                    Name="$(@compiler_id@ChoicePropertyRegistryName)"
-                    Value="@compiler_id@"/>
+                    Name="$(ActiveCompilerChoicePropertyRegistryName)"
+                    Value="$(@compiler_id@ChoicePropertyDefaultValue)"/>
             </RegistryKey>
         </Component>
+
+        <!-- start of test -->
+        <Component Id="@compiler_id@ListOfInstalledCompilersRegistry" Guid="$(@compiler_id@ListOfInstalledCompilersRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="ListOfInstalledCompilers"
+                    Value="$(ListOfInstalledCompilers)"/>
+            </RegistryKey>
+        </Component>
+        <Component Id="@compiler_id@NumberOfInstalledCompilersRegistry" Guid="$(@compiler_id@NumberOfInstalledCompilersRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="integer"
+                    Name="NumberOfInstalledCompilers"
+                    Value="$(NumberOfInstalledCompilers)"/>
+            </RegistryKey>
+        </Component>
+        <Component Id="@compiler_id@NameRegistry" Guid="$(@compiler_id@NameRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="$(ActiveCompilerChoicePropertyRegistryName)Name"
+                    Value="$(@compiler_id@CompilerName)"/>
+            </RegistryKey>
+        </Component>
+        <Component Id="@compiler_id@VersionRegistry" Guid="$(@compiler_id@VersionRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="$(ActiveCompilerChoicePropertyRegistryName)Version"
+                    Value="$(@compiler_id@Version)"/>
+            </RegistryKey>
+        </Component>
+        <Component Id="@compiler_id@HostArchRegistry" Guid="$(@compiler_id@HostArchRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="$(ActiveCompilerChoicePropertyRegistryName)HostArch"
+                    Value="$(@compiler_id@HostArch)"/>
+            </RegistryKey>
+        </Component>
+        <Component Id="@compiler_id@InstallDirRegistry" Guid="$(@compiler_id@InstallDirRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="$(ActiveCompilerChoicePropertyRegistryName)InstallDir"
+                    Value="[@compiler_id@InstallDir]"/>
+            </RegistryKey>
+        </Component>
+        
+        <ComponentGroup Id="@compiler_id@ChoicePropertyComponentGroup">
+            <ComponentRef Id="@compiler_id@ChoicePropertyRegistry"/>
+            <ComponentRef Id="@compiler_id@ListOfInstalledCompilersRegistry"/>
+            <ComponentRef Id="@compiler_id@NumberOfInstalledCompilersRegistry"/>
+            <ComponentRef Id="@compiler_id@NameRegistry"/>
+            <ComponentRef Id="@compiler_id@VersionRegistry"/>
+            <ComponentRef Id="@compiler_id@HostArchRegistry"/>
+            <ComponentRef Id="@compiler_id@InstallDirRegistry"/>
+        </ComponentGroup>
+        <!-- end of test -->
+        
         
         <!-- Custom actions to read the property from / save the property to registry -->
         <CustomAction 
@@ -50,8 +126,9 @@
         </InstallExecuteSequence>
         
         <!-- Define a feature to store the property value on registry -->
-        <Feature Id="@compiler_id@ChoiceOnReg" Title="Save @compiler_id@ choice on registry" Level="1">
-            <ComponentRef Id="@compiler_id@ChoicePropertyRegistry"/>
+        <Feature Id="@compiler_id@ChoiceOnReg" Title="Save on registry the choice for compiler $(@compiler_id@DisplayText)" Level="1">
+            <!-- <ComponentRef Id="@compiler_id@ChoicePropertyRegistry"/> -->
+            <ComponentGroupRef Id="@compiler_id@ChoicePropertyComponentGroup"/>
         </Feature>
         
     </Fragment>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    
+    <!-- Load project definitions -->
+    <?include MinpackBuilder.wxi?>
+
+    <Fragment>
+        <!-- Active compiler choice property to be used by the GUI. -->
+        <!-- When it is not stored on registry, the default value -->
+        <!-- for this property comes from the first entry of the -->
+        <!-- PROJECT_SETTINGS json array. -->
+        <Property Id="$(ActiveCompilerChoiceProperty)" Secure="yes" Value="$(@compiler_id@ChoicePropertyDefaultValue)">
+            <RegistrySearch 
+                Id="regsearch_$(ActiveCompilerChoiceProperty)"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)"
+                Name="$(ActiveCompilerChoicePropertyRegistryName)"
+                Type="raw"/>
+        </Property>
+    </Fragment>
+</Wix>
