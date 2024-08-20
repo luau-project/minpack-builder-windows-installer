@@ -21,6 +21,11 @@ function(write_minpack_builder_license_rtf)
     file_append_line(${__target_file} "## Minpack Builder License")
     file_append_line(${__target_file} "")
     file(READ "${MINPACK_BUILDER_SOURCES}/LICENSE.md" __license_md)
+    string(REPLACE
+        "${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}"
+        "[${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}](${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL})"
+        __license_md
+        "${__license_md}")
     file_append_line(${__target_file} "${__license_md}")
 
     convert_to_rtf("${__target_file}" "${WIXTOOLSET_PROJECT_DIR}/LICENSE.rtf" "End-User License Agreement")
@@ -51,6 +56,11 @@ function(write_minpack_builder_license_pdf)
     file_append_line(${__target_file} "## Minpack Builder License")
     file_append_line(${__target_file} "")
     file(READ "${MINPACK_BUILDER_SOURCES}/LICENSE.md" __license_md)
+    string(REPLACE
+        "${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}"
+        "[${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}](${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL})"
+        __license_md
+        "${__license_md}")
     file_append_line(${__target_file} "${__license_md}")
 
     convert_to_pdf("${__target_file}" "${WIXTOOLSET_PROJECT_DIR}/LICENSE.pdf" "End-User License Agreement")

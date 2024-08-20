@@ -54,10 +54,21 @@ Each element of the array must provide an unique ```CompilerId``` field to ident
 
 First, these are some of the required tools used by the project that need to be available on your command prompt (or terminal):
 
-* cmake (&gt; 3.20)
-* uuidgen (comes from Visual Studio installation -- or MSYS2 -- on Windows, but is also available on Linux)
-* pandoc
-* weasyprint
+* [cmake](https://cmake.org/) (&ge; 3.20)
+* uuidgen
+    * Windows
+        * Visual Studio installation
+        * MSYS2 installation
+            ```bash
+            pacman -S util-linux
+            ```
+    * Linux
+        * Debian-derived distributions
+            ```bash
+            sudo apt-get install uuid-runtime
+            ```
+* [pandoc](https://pandoc.org)
+* [weasyprint](https://weasyprint.org/)
 
 > [!IMPORTANT]
 > 

@@ -13,8 +13,8 @@
             <RegistrySearch 
                 Id="regsearch_$(ActiveCompilerChoiceProperty)"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)"
-                Name="$(ActiveCompilerChoicePropertyRegistryName)"
+                Key="$(ActiveCompilerRegistryKey)"
+                Name="Id"
                 Type="raw"/>
         </Property>
     </Fragment>

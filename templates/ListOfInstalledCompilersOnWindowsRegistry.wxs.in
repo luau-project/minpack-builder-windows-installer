@@ -10,7 +10,7 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)\InstalledCompilers\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
                 <RegistryValue Type="string"
                     Name="Id"
                     Value="@c_id_other@"/>
@@ -20,7 +20,7 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)\InstalledCompilers\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
                 <RegistryValue Type="string"
                     Name="Name"
                     Value="$(@c_id_other@CompilerName)"/>
@@ -30,7 +30,7 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)\InstalledCompilers\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
                 <RegistryValue Type="string"
                     Name="Version"
                     Value="$(@c_id_other@Version)"/>
@@ -40,7 +40,7 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)\InstalledCompilers\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
                 <RegistryValue Type="string"
                     Name="HostArch"
                     Value="$(@c_id_other@HostArch)"/>
@@ -50,23 +50,11 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)\InstalledCompilers\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
                 <RegistryValue Type="string"
                     Name="InstallDir"
                     Value="[@c_id_other@InstallDir]"/>
             </RegistryKey>
         </Component>
-        
-        <!-- <ComponentGroup Id="@c_id_other@RegistryEntriesComponentGroupOn@compiler_id@">
-            <ComponentRef Id="@c_id_other@IdRegistryOn@compiler_id@"/>
-            <ComponentRef Id="@c_id_other@NameRegistryOn@compiler_id@"/>
-            <ComponentRef Id="@c_id_other@VersionRegistryOn@compiler_id@"/>
-            <ComponentRef Id="@c_id_other@HostArchRegistryOn@compiler_id@"/>
-            <ComponentRef Id="@c_id_other@InstallDirRegistryOn@compiler_id@"/>
-        </ComponentGroup>
-
-        <Feature Id="@compiler_id@InstalledCompilers" Title="Compiler entries on registry due to $(@compiler_id@DisplayText) installation" Level="1">
-            <ComponentGroupRef Id="@c_id_other@RegistryEntriesComponentGroupOn@compiler_id@"/>
-        </Feature> -->
     </Fragment>
 </Wix>

@@ -14,51 +14,115 @@
             <RegistrySearch
                 Id="regsearch_$(@compiler_id@ChoiceProperty)"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)"
-                Name="$(ActiveCompilerChoicePropertyRegistryName)"
+                Key="$(ActiveCompilerRegistryKey)"
+                Name="Id"
                 Type="raw"/>
         </Property>
         
+        <!-- Component to store information on registry about the installation directory of Minpack source code -->
+        <Component Id="@compiler_id@MinpackSourceCodeDirRegistry" Guid="$(@compiler_id@MinpackSourceCodeDirRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="MinpackSourceCodeDir"
+                    Value="[MinpackSourceCodeDir]"/>
+            </RegistryKey>
+        </Component>
+
+        <!-- Component to store information on registry about the installation directory of Minpack Builder source code -->
+        <Component Id="@compiler_id@MinpackBuilderSourceCodeDirRegistry" Guid="$(@compiler_id@MinpackBuilderSourceCodeDirRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="SourceCodeDir"
+                    Value="[MinpackBuilderSourceCodeDir]"/>
+            </RegistryKey>
+        </Component>
+
+        <!-- Component to store information on registry about the installation directory of Minpack Builder -->
+        <Component Id="@compiler_id@MinpackBuilderInstallDirRegistry" Guid="$(@compiler_id@MinpackBuilderInstallDirRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="InstallDir"
+                    Value="[INSTALLFOLDER]"/>
+            </RegistryKey>
+        </Component>
+
+        <!-- Component to store information on registry about the version of the Minpack Builder libary -->
+        <Component Id="@compiler_id@MinpackBuilderVersionRegistry" Guid="$(@compiler_id@MinpackBuilderVersionRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="Version"
+                    Value="$(MinpackBuilderVersion)"/>
+            </RegistryKey>
+        </Component>
+
+        <!-- Component to store information on registry about the version of the Minpack Builder Installer -->
+        <Component Id="@compiler_id@MinpackBuilderInstallerVersionRegistry" Guid="$(@compiler_id@MinpackBuilderInstallerVersionRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="InstallerVersion"
+                    Value="$(MinpackBuilderInstallerVersion)"/>
+            </RegistryKey>
+        </Component>
+
+        <!-- Component to store information on registry about the list of installed compilers -->
+        <Component Id="@compiler_id@ListOfInstalledCompilersRegistry" Guid="$(@compiler_id@ListOfInstalledCompilersRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(InstalledCompilersRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="Ids"
+                    Value="$(ListOfInstalledCompilers)"/>
+            </RegistryKey>
+        </Component>
+
+        <!-- Component to store information on registry about the number of installed compilers -->
+        <Component Id="@compiler_id@NumberOfInstalledCompilersRegistry" Guid="$(@compiler_id@NumberOfInstalledCompilersRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(InstalledCompilersRegistryKey)">
+                <RegistryValue Type="integer"
+                    Name="Count"
+                    Value="$(NumberOfInstalledCompilers)"/>
+            </RegistryKey>
+        </Component>
+
         <!-- Component to store the compiler choice on registry -->
         <Component Id="@compiler_id@ChoicePropertyRegistry" Guid="$(@compiler_id@ChoicePropertyRegistryGuid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)">
+                Key="$(ActiveCompilerRegistryKey)">
                 <RegistryValue Type="string"
-                    Name="$(ActiveCompilerChoicePropertyRegistryName)"
+                    Name="Id"
                     Value="$(@compiler_id@ChoicePropertyDefaultValue)"/>
             </RegistryKey>
         </Component>
 
-        <!-- start of test -->
-        <Component Id="@compiler_id@ListOfInstalledCompilersRegistry" Guid="$(@compiler_id@ListOfInstalledCompilersRegistryGuid)">
-            <RegistryKey
-                ForceDeleteOnUninstall="yes"
-                Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)">
-                <RegistryValue Type="string"
-                    Name="ListOfInstalledCompilers"
-                    Value="$(ListOfInstalledCompilers)"/>
-            </RegistryKey>
-        </Component>
-        <Component Id="@compiler_id@NumberOfInstalledCompilersRegistry" Guid="$(@compiler_id@NumberOfInstalledCompilersRegistryGuid)">
-            <RegistryKey
-                ForceDeleteOnUninstall="yes"
-                Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)">
-                <RegistryValue Type="integer"
-                    Name="NumberOfInstalledCompilers"
-                    Value="$(NumberOfInstalledCompilers)"/>
-            </RegistryKey>
-        </Component>
+        <!-- Active compiler (@compiler_id@) details stored on registry -->
         <Component Id="@compiler_id@NameRegistry" Guid="$(@compiler_id@NameRegistryGuid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)">
+                Key="$(ActiveCompilerRegistryKey)">
                 <RegistryValue Type="string"
-                    Name="$(ActiveCompilerChoicePropertyRegistryName)Name"
+                    Name="Name"
                     Value="$(@compiler_id@CompilerName)"/>
             </RegistryKey>
         </Component>
@@ -66,9 +130,9 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)">
+                Key="$(ActiveCompilerRegistryKey)">
                 <RegistryValue Type="string"
-                    Name="$(ActiveCompilerChoicePropertyRegistryName)Version"
+                    Name="Version"
                     Value="$(@compiler_id@Version)"/>
             </RegistryKey>
         </Component>
@@ -76,9 +140,9 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)">
+                Key="$(ActiveCompilerRegistryKey)">
                 <RegistryValue Type="string"
-                    Name="$(ActiveCompilerChoicePropertyRegistryName)HostArch"
+                    Name="HostArch"
                     Value="$(@compiler_id@HostArch)"/>
             </RegistryKey>
         </Component>
@@ -86,17 +150,31 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(MinpackBuilderRegistryKey)">
+                Key="$(ActiveCompilerRegistryKey)">
                 <RegistryValue Type="string"
-                    Name="$(ActiveCompilerChoicePropertyRegistryName)InstallDir"
+                    Name="InstallDir"
                     Value="[@compiler_id@InstallDir]"/>
             </RegistryKey>
         </Component>
         
         <ComponentGroup Id="@compiler_id@ChoicePropertyComponentGroup">
-            <ComponentRef Id="@compiler_id@ChoicePropertyRegistry"/>
+            <!-- Installation directory component -->
+            <ComponentRef Id="@compiler_id@MinpackBuilderInstallDirRegistry"/>
+
+            <!-- Source code installation directory components -->
+            <ComponentRef Id="@compiler_id@MinpackSourceCodeDirRegistry"/>
+            <ComponentRef Id="@compiler_id@MinpackBuilderSourceCodeDirRegistry"/>
+
+            <!-- Version components -->
+            <ComponentRef Id="@compiler_id@MinpackBuilderVersionRegistry"/>
+            <ComponentRef Id="@compiler_id@MinpackBuilderInstallerVersionRegistry"/>
+
+            <!-- References to components containing information about installed compilers -->
             <ComponentRef Id="@compiler_id@ListOfInstalledCompilersRegistry"/>
             <ComponentRef Id="@compiler_id@NumberOfInstalledCompilersRegistry"/>
+            
+            <!-- References to components containing information about the active compiler (@compiler_id@) -->
+            <ComponentRef Id="@compiler_id@ChoicePropertyRegistry"/>
             <ComponentRef Id="@compiler_id@NameRegistry"/>
             <ComponentRef Id="@compiler_id@VersionRegistry"/>
             <ComponentRef Id="@compiler_id@HostArchRegistry"/>

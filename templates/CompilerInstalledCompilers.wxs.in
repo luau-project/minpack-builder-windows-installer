@@ -6,12 +6,12 @@
     
     <Fragment>
         <ComponentGroup Id="@compiler_id@InstalledCompilersComponentGroup">
-            <?foreach Cidother in $(ListOfInstalledCompilers)?>
-                <ComponentRef Id="$(Cidother)IdRegistryOn@compiler_id@"/>
-                <ComponentRef Id="$(Cidother)NameRegistryOn@compiler_id@"/>
-                <ComponentRef Id="$(Cidother)VersionRegistryOn@compiler_id@"/>
-                <ComponentRef Id="$(Cidother)HostArchRegistryOn@compiler_id@"/>
-                <ComponentRef Id="$(Cidother)InstallDirRegistryOn@compiler_id@"/>
+            <?foreach InstalledCompilerId in $(ListOfInstalledCompilers)?>
+                <ComponentRef Id="$(InstalledCompilerId)IdRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(InstalledCompilerId)NameRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(InstalledCompilerId)VersionRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(InstalledCompilerId)HostArchRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(InstalledCompilerId)InstallDirRegistryOn@compiler_id@"/>
             <?endforeach ?>
         </ComponentGroup>
 

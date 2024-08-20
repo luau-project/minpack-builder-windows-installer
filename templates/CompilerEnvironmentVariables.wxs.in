@@ -13,7 +13,7 @@
                     Action="set"
                     Permanent="no"
                     System="yes"
-                    Part="last"/>
+                    Part="first"/>
             </Component>
             <Component Id="@compiler_id@EnvironmentVariableOnPathComponent" Guid="$(@compiler_id@EnvironmentVariableOnPathGuid)">
                 <Environment Id="@compiler_id@AddOnPathEnvironmentVariable"
@@ -22,7 +22,7 @@
                     Action="set"
                     Permanent="no"
                     System="yes"
-                    Part="last"/>
+                    Part="first"/>
             </Component>
             <Component Id="@compiler_id@CMakePrefixPathComponent" Guid="$(@compiler_id@CMakePrefixPathGuid)">
                 <Environment Id="@compiler_id@CMakePrefixPathEnvironmentVariable"
@@ -31,7 +31,7 @@
                     Action="set"
                     Permanent="no"
                     System="yes"
-                    Part="last"/>
+                    Part="first"/>
             </Component>
         </DirectoryRef>
 

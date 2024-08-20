@@ -31,9 +31,14 @@ if (NOT EXISTS "${MINPACK_BUILDER_SOURCES}/LICENSE.md")
     message(FATAL_ERROR "The license file of the Minpack Builder project was not found. Please, set the proper directory for the source code of Minpack Builder project as \"-DMINPACK_BUILDER_SOURCES=path/to/minpack-builder\"")
 endif()
 
+set(INSTALLER_CULTURE "en-us" CACHE STRING "Culture of the installer.")
+
+string(TOLOWER "${INSTALLER_CULTURE}" __culture_lower)
+
 set(WIXTOOLSET_PROJECT_DIR "${CMAKE_BINARY_DIR}/wixtoolset-v5")
 set(WIXTOOLSET_PROJECT_INCLUDE_FILE_NAME "MinpackBuilder.wxi")
 set(WIXTOOLSET_PROJECT_MAIN_FILE_NAME "MinpackBuilder.wxs")
+set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL "https://github.com/luau-project/minpack-builder")
 set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME "MinpackBuilderDialog.wxs")
 set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME "MinpackBuilderCustomizeDialog.wxs")
 set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_LICENSE_RTF_FILE_NAME "LICENSE.rtf")
@@ -48,12 +53,15 @@ include(cmake/GenerateMinpackBuilderMainFile.cmake)
 include(cmake/HarvestDirectory.cmake)
 include(cmake/ParseCompilerSettings.cmake)
 
+get_LCID_from_culture("${__culture_lower}" __MinpackBuilderLCID)
+
 begin_project_config_wxi()
 append_blank_line_on_project_config_wxi()
 append_comment_on_project_config_wxi("start of project settings")
 append_define_guid_on_project_config_wxi("UpgradeCode")
 append_define_on_project_config_wxi("Manufacturer" "Luau Project")
 append_define_on_project_config_wxi("PackageName" "Minpack Builder")
+append_define_on_project_config_wxi("MinpackBuilderLanguage" "${__MinpackBuilderLCID}")
 append_define_on_project_config_wxi("MinpackBuilderVersion" "${MINPACK_BUILDER_VERSION}")
 append_define_on_project_config_wxi("MinpackBuilderInstallerVersion" "${PROJECT_VERSION}")
 append_define_on_project_config_wxi("MinpackBuilderRegistryRoot" "HKLM")
@@ -68,13 +76,19 @@ append_define_on_project_config_wxi("MinpackBuilderSourceCodeDirectory" "minpack
 append_define_on_project_config_wxi("LicenseRTF" "LICENSE.rtf")
 append_define_on_project_config_wxi("LicensePDF" "LICENSE.pdf")
 
+append_define_on_project_config_wxi("ActiveCompilerRegistryKey" "\$(MinpackBuilderRegistryKey)\\ActiveCompiler")
+append_define_on_project_config_wxi("InstalledCompilersRegistryKey" "\$(MinpackBuilderRegistryKey)\\InstalledCompilers")
 append_define_on_project_config_wxi("ActiveCompilerChoiceProperty" "ACTIVECOMPILER")
-append_define_on_project_config_wxi("ActiveCompilerChoicePropertyRegistryName" "ActiveCompiler")
 append_comment_on_project_config_wxi("end of project settings")
 
 parse_compiler_settings_from_json("${PROJECT_SETTINGS}" compiler_ids)
 append_blank_line_on_project_config_wxi()
 end_project_config_wxi()
+
+file(COPY
+    "wixtoolset-dialogs/WixUI_${__culture_lower}.wxl"
+    DESTINATION
+    "${WIXTOOLSET_PROJECT_DIR}")
 
 write_minpack_builder_customize_dialog_wxs("${compiler_ids}")
 
@@ -95,12 +109,20 @@ file(GLOB __wix_source_files
     RELATIVE "${WIXTOOLSET_PROJECT_DIR}"
     "${WIXTOOLSET_PROJECT_DIR}/*.wxs")
 
+file(GLOB __wix_localization_files
+    RELATIVE "${WIXTOOLSET_PROJECT_DIR}"
+    "${WIXTOOLSET_PROJECT_DIR}/*.wxl")
+
 foreach(wix_wxs "${__wix_source_files}")
     list(APPEND __wix_build_cmd ${wix_wxs})
 endforeach()
 
+foreach(wix_wxl "${__wix_localization_files}")
+    list(APPEND __wix_build_cmd ${wix_wxl})
+endforeach()
+
 list(APPEND __wix_build_cmd "-out")
-list(APPEND __wix_build_cmd "MinpackBuilderInstaller.msi")
+list(APPEND __wix_build_cmd "MinpackBuilderInstaller-${__culture_lower}.msi")
 
 list(JOIN __wix_build_cmd " " __wix_build_cmd)
 
