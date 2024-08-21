@@ -28,7 +28,7 @@ function(write_minpack_builder_license_rtf)
         "${__license_md}")
     file_append_line(${__target_file} "${__license_md}")
 
-    convert_to_rtf("${__target_file}" "${WIXTOOLSET_PROJECT_DIR}/LICENSE.rtf" "End-User License Agreement")
+    convert_to_rtf("${__target_file}" "${WIXTOOLSET_PROJECT_DIR}/${WIXTOOLSET_PROJECT_MINPACK_BUILDER_LICENSE_RTF_FILE_NAME}" "End-User License Agreement")
 
     file(REMOVE ${__target_file})
 endfunction()
@@ -63,7 +63,7 @@ function(write_minpack_builder_license_pdf)
         "${__license_md}")
     file_append_line(${__target_file} "${__license_md}")
 
-    convert_to_pdf("${__target_file}" "${WIXTOOLSET_PROJECT_DIR}/LICENSE.pdf" "End-User License Agreement")
+    convert_to_pdf("${__target_file}" "${WIXTOOLSET_PROJECT_DIR}/${WIXTOOLSET_PROJECT_MINPACK_BUILDER_LICENSE_PDF_FILE_NAME}" "End-User License Agreement")
     
     file(REMOVE ${__target_file})
 endfunction()

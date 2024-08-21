@@ -63,7 +63,7 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
     __append_comment_on_minpack_builder_main_file_wxs(2 "Installation directories for the project")
     __append_indented_lines_on_minpack_builder_main_file_wxs(2 "<StandardDirectory Id=\"ProgramFiles6432Folder\">")
     __append_indented_lines_on_minpack_builder_main_file_wxs(3 "<Directory Name=\"\$(Manufacturer)\">")
-    __append_indented_lines_on_minpack_builder_main_file_wxs(4 "<Directory Id=\"INSTALLFOLDER\" Name=\"\$(PackageName)\">")
+    __append_indented_lines_on_minpack_builder_main_file_wxs(4 "<Directory Id=\"INSTALLFOLDER\" Name=\"\$(ProductName)\">")
 
     # Minpack source code
     __append_blank_line_on_minpack_builder_main_file_wxs(5)

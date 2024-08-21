@@ -35,6 +35,8 @@ set(INSTALLER_CULTURE "en-us" CACHE STRING "Culture of the installer.")
 
 string(TOLOWER "${INSTALLER_CULTURE}" __culture_lower)
 
+set(WIXTOOLSET_MSI_NAME_WE "${PROJECT_NAME}-${PROJECT_VERSION}-${__culture_lower}")
+set(WIXTOOLSET_MSI_NAME "${WIXTOOLSET_MSI_NAME_WE}.msi")
 set(WIXTOOLSET_PROJECT_DIR "${CMAKE_BINARY_DIR}/wixtoolset-v5")
 set(WIXTOOLSET_PROJECT_INCLUDE_FILE_NAME "MinpackBuilder.wxi")
 set(WIXTOOLSET_PROJECT_MAIN_FILE_NAME "MinpackBuilder.wxs")
@@ -60,12 +62,13 @@ append_blank_line_on_project_config_wxi()
 append_comment_on_project_config_wxi("start of project settings")
 append_define_guid_on_project_config_wxi("UpgradeCode")
 append_define_on_project_config_wxi("Manufacturer" "Luau Project")
-append_define_on_project_config_wxi("PackageName" "Minpack Builder")
+append_define_on_project_config_wxi("ProductName" "Minpack Builder")
 append_define_on_project_config_wxi("MinpackBuilderLanguage" "${__MinpackBuilderLCID}")
 append_define_on_project_config_wxi("MinpackBuilderVersion" "${MINPACK_BUILDER_VERSION}")
 append_define_on_project_config_wxi("MinpackBuilderInstallerVersion" "${PROJECT_VERSION}")
+append_define_on_project_config_wxi("PackageName" "\$(ProductName) \$(MinpackBuilderVersion)")
 append_define_on_project_config_wxi("MinpackBuilderRegistryRoot" "HKLM")
-append_define_on_project_config_wxi("MinpackBuilderRegistryKey" [[Software\$(Manufacturer)\$(PackageName)]])
+append_define_on_project_config_wxi("MinpackBuilderRegistryKey" "Software\\\$(Manufacturer)\\\$(ProductName)")
 
 get_filename_component(__minpack_sources_dir_name "${MINPACK_SOURCES}" NAME)
 append_define_on_project_config_wxi("MinpackSourceCodeDirectory" "minpack-source-code\\${__minpack_sources_dir_name}")
@@ -86,14 +89,14 @@ append_blank_line_on_project_config_wxi()
 end_project_config_wxi()
 
 file(COPY
-    "wixtoolset-dialogs/WixUI_${__culture_lower}.wxl"
+    "localization/WixUI_${__culture_lower}.wxl"
     DESTINATION
     "${WIXTOOLSET_PROJECT_DIR}")
 
 write_minpack_builder_customize_dialog_wxs("${compiler_ids}")
 
 configure_file(
-    wixtoolset-dialogs/MinpackBuilderDialog.wxs
+    templates/MinpackBuilderDialog.wxs.in
     "${WIXTOOLSET_PROJECT_DIR}/${WIXTOOLSET_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME}"
     NEWLINE_STYLE WIN32)
 
@@ -122,8 +125,42 @@ foreach(wix_wxl "${__wix_localization_files}")
 endforeach()
 
 list(APPEND __wix_build_cmd "-out")
-list(APPEND __wix_build_cmd "MinpackBuilderInstaller-${__culture_lower}.msi")
+list(APPEND __wix_build_cmd "${WIXTOOLSET_MSI_NAME}")
 
 list(JOIN __wix_build_cmd " " __wix_build_cmd)
 
 file(WRITE "${WIXTOOLSET_PROJECT_DIR}/msi.bat" "${__wix_build_cmd}")
+
+# Creating archives (.zip and .tar.gz) for the generated WixToolset project.
+# Also, storing hashes (SHA256 and MD5) for such archives.
+set(__archives_dir "${CMAKE_BINARY_DIR}/archives-wixtoolset")
+
+file(MAKE_DIRECTORY "${__archives_dir}")
+
+set(__archive_filepath_base "${__archives_dir}/${WIXTOOLSET_MSI_NAME_WE}")
+set(__zip_archive_filename "${__archive_filepath_base}.zip")
+set(__targz_archive_filename "${__archive_filepath_base}.tar.gz")
+
+# .zip archive
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar c "${__zip_archive_filename}" --format=zip -- "${WIXTOOLSET_PROJECT_DIR}"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RESULT_VARIABLE zip_archive_res
+)
+
+# .tar.gz archive
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar cz "${__targz_archive_filename}" --format=gnutar -- "${WIXTOOLSET_PROJECT_DIR}"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RESULT_VARIABLE targz_archive_res
+)
+
+set(__wixtoolset_archives "${__zip_archive_filename}" "${__targz_archive_filename}")
+set(__hashes "SHA256" "MD5")
+
+foreach(__file_archive ${__wixtoolset_archives})
+    foreach (__hash ${__hashes})
+        file(${__hash} ${__file_archive} __hash_value)
+        file(WRITE "${__file_archive}-${__hash}.txt" "${__hash_value}")
+    endforeach()
+endforeach()

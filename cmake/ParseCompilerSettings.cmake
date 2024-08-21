@@ -142,6 +142,10 @@ function(parse_compiler_settings_from_json json_file compiler_ids)
 
         __get_compiler_setting("${json_file_content}" "${_index}" "CompilerId" "STRING" compiler_id)
 
+        if (NOT ("${compiler_id}" MATCHES "^[a-zA-Z]+\$"))
+            message(FATAL_ERROR "Invalid compiler id on entry ${_index}. Only alphabetic characters a-z or A-Z are allowed.")
+        endif()
+
         string(TOUPPER "${compiler_id}" compiler_id_upper)
         if ("${compiler_id_upper}" IN_LIST _compiler_ids_upper)
             message(FATAL_ERROR "Compiler id is case-insensitive. An entry for \"${compiler_id}\" is already defined. Please, choose a different compiler id for the compiler at index ${_index} on file \"${json_file}\".")

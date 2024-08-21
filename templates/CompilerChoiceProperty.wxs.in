@@ -157,15 +157,16 @@
             </RegistryKey>
         </Component>
         
+        <!-- ComponentGroup for the feature -->
         <ComponentGroup Id="@compiler_id@ChoicePropertyComponentGroup">
-            <!-- Installation directory component -->
+            <!-- Reference to the installation directory component -->
             <ComponentRef Id="@compiler_id@MinpackBuilderInstallDirRegistry"/>
 
-            <!-- Source code installation directory components -->
+            <!-- References to components holding the source code directories -->
             <ComponentRef Id="@compiler_id@MinpackSourceCodeDirRegistry"/>
             <ComponentRef Id="@compiler_id@MinpackBuilderSourceCodeDirRegistry"/>
 
-            <!-- Version components -->
+            <!-- References to components holding the library version and installer version -->
             <ComponentRef Id="@compiler_id@MinpackBuilderVersionRegistry"/>
             <ComponentRef Id="@compiler_id@MinpackBuilderInstallerVersionRegistry"/>
 
@@ -180,8 +181,6 @@
             <ComponentRef Id="@compiler_id@HostArchRegistry"/>
             <ComponentRef Id="@compiler_id@InstallDirRegistry"/>
         </ComponentGroup>
-        <!-- end of test -->
-        
         
         <!-- Custom actions to read the property from / save the property to registry -->
         <CustomAction 
@@ -205,7 +204,6 @@
         
         <!-- Define a feature to store the property value on registry -->
         <Feature Id="@compiler_id@ChoiceOnReg" Title="Save on registry the choice for compiler $(@compiler_id@DisplayText)" Level="1">
-            <!-- <ComponentRef Id="@compiler_id@ChoicePropertyRegistry"/> -->
             <ComponentGroupRef Id="@compiler_id@ChoicePropertyComponentGroup"/>
         </Feature>
         

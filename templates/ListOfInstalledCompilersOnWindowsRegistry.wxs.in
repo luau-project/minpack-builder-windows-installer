@@ -6,6 +6,7 @@
     
     <Fragment>
 
+        <!-- Component for the Id entry on registry -->
         <Component Id="@c_id_other@IdRegistryOn@compiler_id@" Guid="$(@c_id_other@IdRegistryOn@compiler_id@Guid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
@@ -16,6 +17,8 @@
                     Value="@c_id_other@"/>
             </RegistryKey>
         </Component>
+
+        <!-- Component for the Name entry on registry -->
         <Component Id="@c_id_other@NameRegistryOn@compiler_id@" Guid="$(@c_id_other@NameRegistryOn@compiler_id@Guid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
@@ -26,6 +29,8 @@
                     Value="$(@c_id_other@CompilerName)"/>
             </RegistryKey>
         </Component>
+
+        <!-- Component for the Version entry on registry -->
         <Component Id="@c_id_other@VersionRegistryOn@compiler_id@" Guid="$(@c_id_other@VersionRegistryOn@compiler_id@Guid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
@@ -36,6 +41,8 @@
                     Value="$(@c_id_other@Version)"/>
             </RegistryKey>
         </Component>
+
+        <!-- Component for the HostArch entry on registry -->
         <Component Id="@c_id_other@HostArchRegistryOn@compiler_id@" Guid="$(@c_id_other@HostArchRegistryOn@compiler_id@Guid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
@@ -46,6 +53,8 @@
                     Value="$(@c_id_other@HostArch)"/>
             </RegistryKey>
         </Component>
+
+        <!-- Component for the InstallDir entry on registry -->
         <Component Id="@c_id_other@InstallDirRegistryOn@compiler_id@" Guid="$(@c_id_other@InstallDirRegistryOn@compiler_id@Guid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
@@ -56,5 +65,6 @@
                     Value="[@c_id_other@InstallDir]"/>
             </RegistryKey>
         </Component>
+        
     </Fragment>
 </Wix>
