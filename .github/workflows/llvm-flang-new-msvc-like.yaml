@@ -1,0 +1,101 @@
+name: Build Minpack Builder with LLVM Flang-new (MSVC-like)
+
+on: workflow_call
+
+jobs:
+  
+  build:
+    name: Build Minpack
+    runs-on: windows-latest
+  
+    steps:
+
+      - name: Download source code artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: source-code
+          path: source-code
+
+      - name: Install Ninja
+        run: choco install ninja
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        name: Setup MSVC development prompt
+
+      - name: Setup miniconda, install LLVM flang-new (MSVC-like) from conda-forge, and set FC, CC and CXX environment variables.
+        run: |
+          & "$env:CONDA\shell\condabin\conda-hook.ps1";
+          conda activate "$env:CONDA";
+          conda install --yes -c conda-forge -n base flang libflang libfortran-main;
+          Get-ChildItem env: | Where-Object { $_.Name.ToLower().Contains("conda") -or $_.Value.ToLower().Contains("conda") } | ForEach-Object { Add-Content "${{ github.env }}" ($_.Name + "=" + $_.Value); }
+          Add-Content "${{ github.env }}" "FC=flang-new";
+          Add-Content "${{ github.env }}" "CC=clang-cl";
+          Add-Content "${{ github.env }}" "CXX=clang-cl";
+      
+      - name: Setup environment variables for the build
+        run: |
+          $upload_dir = Join-Path "${{ github.workspace }}" -ChildPath "llvm-flang-new-msvc-like";
+          mkdir $upload_dir;
+
+          $install_dir = Join-Path "${upload_dir}" -ChildPath "binaries";
+          $source_dir = Join-Path "${{ github.workspace }}" -ChildPath "source-code" | Join-Path -ChildPath "minpack-builder-with-minpack";
+          $build_dir = Join-Path "${{ runner.temp }}" -ChildPath "build";
+
+          Add-Content "${{ github.env }}" "UploadDir=llvm-flang-new-msvc-like";
+          Add-Content "${{ github.env }}" "InstallDir=${install_dir}";
+          Add-Content "${{ github.env }}" "SourceDir=${source_dir}";
+          Add-Content "${{ github.env }}" "BuildDir=${build_dir}";
+          Add-Content "${{ github.env }}" "Generator=Ninja";
+      
+      - name: Capture the version of the Fortran compiler
+        run: |
+          $compiler_output_file = Join-Path "${{ runner.temp }}" -ChildPath "compiler-output.txt";
+          & "${{ env.FC }}" --version > $compiler_output_file;
+          Write-Host (Get-Content $compiler_output_file);
+
+          $first_line_of_compiler_output = [System.IO.File]::ReadAllLines($compiler_output_file)[0];
+
+          if ($first_line_of_compiler_output -match "\b(\d+\.\d+\.\d+)\b")
+          {
+            $version = $Matches.1;
+            $version_file = Join-Path "${{ env.UploadDir }}" -ChildPath "fortran-compiler-version.txt";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            Write-Host "Compiler version: ${yellow}${version}${nocolor}";
+            Set-Content -Path $version_file -Value $version -NoNewline;
+          }
+          else
+          {
+            $red = (0x1b -as [char]) + "[31m";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            Write-Host ($red + "Unable to find the compiler version" + $nocolor);
+            exit /B 1;
+          }
+      
+      - name: Configure the build of minpack
+        run: |
+          cmake `
+            -G "${{ env.Generator }}" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DBUILD_SHARED_LIBS=ON `
+            -DBUILD_STATIC_LIBS=OFF `
+            -DUSE_DOWNLOAD=OFF `
+            --install-prefix "${{ env.InstallDir }}" `
+            -S "${{ env.SourceDir }}" `
+            -B "${{ env.BuildDir }}";
+
+      - name: Build minpack
+        run: cmake --build "${{ env.BuildDir }}" --config Release
+
+      - name: Install minpack
+        run: cmake --install "${{ env.BuildDir }}" --config Release
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.UploadDir }}
+          path: ${{ env.UploadDir }}
+          retention-days: 1
+          if-no-files-found: error
+      

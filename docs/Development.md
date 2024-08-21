@@ -93,6 +93,16 @@ If the command succeed, the source files for the ```WiX Toolset``` project will 
 >     dotnet tool install --global wix --version 5.0.1
 >     ```
 
+Before building the project, if you never did it, install and add the WixToolset.UI extension to the global cache:
+
+```cmd
+wix extension add -g WixToolset.UI.wixext/5.0.1
+```
+
+> [!NOTE]
+> 
+> The addition of WixToolset.UI extension to the global cache only needs to be done once
+
 Assuming you got this far, you were able to generate the ```WiX Toolset``` project, and it is stored on the directory ```build/wixtoolset-v5```.
 
 Then, using a command prompt on a Windows machine, you can now change directory to ```build/wixtoolset-v5``` and execute the file ```msi.bat```, which builds the MSI package.

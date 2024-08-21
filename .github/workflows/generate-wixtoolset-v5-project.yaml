@@ -1,0 +1,269 @@
+name: Generate WixToolset
+
+on: workflow_call
+
+jobs:
+  get-source-code:
+    name: Source code
+    uses: ./.github/workflows/source-code.yaml
+    with:
+      download-from-netlib: ${{ github.ref_name == 'release' || startsWith(github.ref, 'refs/tags/') }}
+      minpack-builder-version: '1.1.0'
+  
+  build-mingw32:
+    name: GFortran MINGW32
+    uses: ./.github/workflows/msys2.yaml
+    needs: get-source-code
+    with:
+      system: mingw32
+
+  build-mingw64:
+    name: GFortran MINGW64
+    uses: ./.github/workflows/msys2.yaml
+    needs: get-source-code
+    with:
+      system: mingw64
+
+  build-ucrt64:
+    name: GFortran UCRT64
+    uses: ./.github/workflows/msys2.yaml
+    needs: get-source-code
+    with:
+      system: ucrt64
+
+  build-clang64:
+    name: LLVM flang-new GCC-like
+    uses: ./.github/workflows/msys2.yaml
+    needs: get-source-code
+    with:
+      system: clang64
+
+  build-llvm-flang-new-msvc-like:
+    name: LLVM flang-new MSVC-like
+    uses: ./.github/workflows/llvm-flang-new-msvc-like.yaml
+    needs: get-source-code
+
+  generate-project:
+    name: Generate WixToolset
+    runs-on: ubuntu-latest
+    needs: 
+      - get-source-code
+      - build-mingw32
+      - build-mingw64
+      - build-ucrt64
+      - build-clang64
+      - build-llvm-flang-new-msvc-like
+
+    steps:
+
+      - name: Download source code artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: source-code
+          path: source-code
+
+      - name: Download mingw32 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mingw32
+          path: mingw32
+        
+      - name: Download mingw64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mingw64
+          path: mingw64
+
+      - name: Download ucrt64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ucrt64
+          path: ucrt64
+
+      - name: Download clang64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: clang64
+          path: clang64
+
+      - name: Download llvm-flang-new-msvc-like artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: llvm-flang-new-msvc-like
+          path: llvm-flang-new-msvc-like
+      
+      - name: Generate project-config.json
+        run: |
+          compiler_ids=();
+
+          declare -A compiler_settings;
+          id="mingw32";
+          compiler_settings["${id}_id"]="MSYSTwoMINGWThreeTwo";
+          compiler_settings["${id}_name"]="GFortran MINGW32 from MSYS2";
+          compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
+          compiler_settings["${id}_hostarch"]="x32";
+          compiler_ids+=("${id}");
+
+          id="mingw64";
+          compiler_settings["${id}_id"]="MSYSTwoMINGWSixFour";
+          compiler_settings["${id}_name"]="GFortran MINGW64 from MSYS2";
+          compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
+          compiler_settings["${id}_hostarch"]="x64";
+          compiler_ids+=("${id}");
+
+          id="ucrt64";
+          compiler_settings["${id}_id"]="MSYSTwoUCRTSixFour";
+          compiler_settings["${id}_name"]="GFortran UCRT64 from MSYS2";
+          compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
+          compiler_settings["${id}_hostarch"]="x64";
+          compiler_ids+=("${id}");
+
+          id="clang64";
+          compiler_settings["${id}_id"]="MSYSTwoCLANGSixFour";
+          compiler_settings["${id}_name"]="LLVM Flang-New GCC-like CLANG64 from MSYS2";
+          compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
+          compiler_settings["${id}_hostarch"]="x64";
+          compiler_ids+=("${id}");
+
+          id="llvm-flang-new-msvc-like";
+          compiler_settings["${id}_id"]="LLVMFlangNewMsvcLike";
+          compiler_settings["${id}_name"]="LLVM Flang-New MSVC-like from conda-forge";
+          compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
+          compiler_settings["${id}_hostarch"]="x64";
+          compiler_ids+=("${id}");
+
+          project_settings_json="${{ runner.temp }}/project-settings.json";
+          echo "[" > ${project_settings_json};
+
+          ids_len="${#compiler_ids[@]}";
+
+          index=$((1));
+
+          for cid in "${compiler_ids[@]}";
+          do
+            id_key="${cid}_id";
+            name_key="${cid}_name";
+            version_key="${cid}_version";
+            hostarch_key="${cid}_hostarch";
+
+            compiler_id="${compiler_settings[${id_key}]}";
+            compiler_name="${compiler_settings[${name_key}]}";
+            compiler_version="${compiler_settings[${version_key}]}";
+            compiler_hostarch="${compiler_settings[${hostarch_key}]}";
+
+            echo -e "\t{" >> ${project_settings_json};
+            echo -e "\t\t\"CompilerId\":\"${compiler_id}\"," >> ${project_settings_json};
+            echo -e "\t\t\"CompilerName\":\"${compiler_name}\"," >> ${project_settings_json};
+            echo -e "\t\t\"HostArch\":\"${compiler_hostarch}\"," >> ${project_settings_json};
+            echo -e "\t\t\"Version\":\"${compiler_version}\"" >> ${project_settings_json};
+
+            if [ ${index} -lt ${ids_len} ];
+            then
+              echo -e "\t}," >> ${project_settings_json};
+            else
+              echo -e "\t}" >> ${project_settings_json};
+            fi
+
+            index=$((index+1));
+          done
+
+          echo "]" >> ${project_settings_json};
+
+          echo "CONFIG_FILE=${project_settings_json}" >> $GITHUB_ENV;
+
+      - name: Checkout installer source code
+        uses: actions/checkout@v4
+        with:
+          path: minpack-builder-windows-installer
+    
+      - name: Install pandoc and weasyprint
+        run: sudo apt install -y pandoc weasyprint
+      
+      - name: Set environment variables to generate the WixToolset V5 project
+        run: |
+          minpack_builder_version=$(cat "${{ github.workspace }}/source-code/minpack-builder-version.txt");
+          minpack_builder_sources="${{ github.workspace }}/source-code/minpack-builder";
+          minpack_sources="${{ github.workspace }}/source-code/minpack";
+          source_dir="${{ github.workspace }}/minpack-builder-windows-installer";
+
+          build_dir_en_us="${{ github.workspace }}/build-en_us";
+          install_prefix_en_us="${{ runner.temp }}/install-en_us";
+          upload_dir_en_us=$(basename ${build_dir_en_us})/archives-wixtoolset;
+
+          build_dir_pt_br="${{ github.workspace }}/build-pt_br";
+          install_prefix_pt_br="${{ runner.temp }}/install-pt_br";
+          upload_dir_pt_br=$(basename ${build_dir_pt_br})/archives-wixtoolset;
+
+          MSYSTwoMINGWThreeTwo_BINARIES_DIR="${{ github.workspace }}/mingw32/binaries";
+          MSYSTwoMINGWSixFour_BINARIES_DIR="${{ github.workspace }}/mingw64/binaries";
+          MSYSTwoUCRTSixFour_BINARIES_DIR="${{ github.workspace }}/ucrt64/binaries";
+          MSYSTwoCLANGSixFour_BINARIES_DIR="${{ github.workspace }}/clang64/binaries";
+          LLVMFlangNewMsvcLike_BINARIES_DIR="${{ github.workspace }}/llvm-flang-new-msvc-like/binaries";
+
+          echo "MINPACK_BUILDER_SOURCES=${minpack_builder_sources}" >> $GITHUB_ENV;
+          echo "MINPACK_BUILDER_VERSION=${minpack_builder_version}" >> $GITHUB_ENV;
+          echo "MINPACK_SOURCES=${minpack_sources}" >> $GITHUB_ENV;
+          echo "SOURCE_DIR=${source_dir}" >> $GITHUB_ENV;
+
+          echo "BUILD_DIR_EN_US=${build_dir_en_us}" >> $GITHUB_ENV;
+          echo "INSTALL_PREFIX_EN_US=${install_prefix_en_us}" >> $GITHUB_ENV;
+          echo "UPLOAD_DIR_EN_US=${upload_dir_en_us}" >> $GITHUB_ENV;
+
+          echo "BUILD_DIR_PT_BR=${build_dir_pt_br}" >> $GITHUB_ENV;
+          echo "INSTALL_PREFIX_PT_BR=${install_prefix_pt_br}" >> $GITHUB_ENV;
+          echo "UPLOAD_DIR_PT_BR=${upload_dir_pt_br}" >> $GITHUB_ENV;
+
+          echo "MSYSTwoMINGWThreeTwo_BINARIES_DIR=${MSYSTwoMINGWThreeTwo_BINARIES_DIR}" >> $GITHUB_ENV;
+          echo "MSYSTwoMINGWSixFour_BINARIES_DIR=${MSYSTwoMINGWSixFour_BINARIES_DIR}" >> $GITHUB_ENV;
+          echo "MSYSTwoUCRTSixFour_BINARIES_DIR=${MSYSTwoUCRTSixFour_BINARIES_DIR}" >> $GITHUB_ENV;
+          echo "MSYSTwoCLANGSixFour_BINARIES_DIR=${MSYSTwoCLANGSixFour_BINARIES_DIR}" >> $GITHUB_ENV;
+          echo "LLVMFlangNewMsvcLike_BINARIES_DIR=${LLVMFlangNewMsvcLike_BINARIES_DIR}" >> $GITHUB_ENV;
+
+      - name: Generate the WixToolset V5 project (en-US)
+        run: |
+          cmake \
+            -DINSTALLER_CULTURE=en-us \
+            -DPROJECT_SETTINGS="${{ env.CONFIG_FILE }}" \
+            -DMINPACK_BUILDER_SOURCES="${{ env.MINPACK_BUILDER_SOURCES }}" \
+            -DMINPACK_BUILDER_VERSION="${{ env.MINPACK_BUILDER_VERSION }}" \
+            -DMINPACK_SOURCES="${{ env.MINPACK_SOURCES }}" \
+            -DMSYSTwoMINGWThreeTwo_BINARIES_DIR="${{ env.MSYSTwoMINGWThreeTwo_BINARIES_DIR }}" \
+            -DMSYSTwoMINGWSixFour_BINARIES_DIR="${{ env.MSYSTwoMINGWSixFour_BINARIES_DIR }}" \
+            -DMSYSTwoUCRTSixFour_BINARIES_DIR="${{ env.MSYSTwoUCRTSixFour_BINARIES_DIR }}" \
+            -DMSYSTwoCLANGSixFour_BINARIES_DIR="${{ env.MSYSTwoCLANGSixFour_BINARIES_DIR }}" \
+            -DLLVMFlangNewMsvcLike_BINARIES_DIR="${{ env.LLVMFlangNewMsvcLike_BINARIES_DIR }}" \
+            --install-prefix "${{ env.INSTALL_PREFIX_EN_US }}" \
+            -S "${{ env.SOURCE_DIR }}" \
+            -B "${{ env.BUILD_DIR_EN_US }}";
+
+      - name: Generate the WixToolset V5 project (pt-BR)
+        run: |
+          cmake \
+            -DINSTALLER_CULTURE=pt-br \
+            -DPROJECT_SETTINGS="${{ env.CONFIG_FILE }}" \
+            -DMINPACK_BUILDER_SOURCES="${{ env.MINPACK_BUILDER_SOURCES }}" \
+            -DMINPACK_BUILDER_VERSION="${{ env.MINPACK_BUILDER_VERSION }}" \
+            -DMINPACK_SOURCES="${{ env.MINPACK_SOURCES }}" \
+            -DMSYSTwoMINGWThreeTwo_BINARIES_DIR="${{ env.MSYSTwoMINGWThreeTwo_BINARIES_DIR }}" \
+            -DMSYSTwoMINGWSixFour_BINARIES_DIR="${{ env.MSYSTwoMINGWSixFour_BINARIES_DIR }}" \
+            -DMSYSTwoUCRTSixFour_BINARIES_DIR="${{ env.MSYSTwoUCRTSixFour_BINARIES_DIR }}" \
+            -DMSYSTwoCLANGSixFour_BINARIES_DIR="${{ env.MSYSTwoCLANGSixFour_BINARIES_DIR }}" \
+            -DLLVMFlangNewMsvcLike_BINARIES_DIR="${{ env.LLVMFlangNewMsvcLike_BINARIES_DIR }}" \
+            --install-prefix "${{ env.INSTALL_PREFIX_PT_BR }}" \
+            -S "${{ env.SOURCE_DIR }}" \
+            -B "${{ env.BUILD_DIR_PT_BR }}";
+      
+      - name: Prepare directory to upload
+        run: |
+          rm -rf project && mkdir -p project
+          cp "${{ github.workspace }}/source-code/minpack-builder-version.txt" project
+          cp -r ${{ env.UPLOAD_DIR_EN_US }} project
+          cp -r ${{ env.UPLOAD_DIR_PT_BR }} project
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: project
+          path: project
+          retention-days: 1
+          if-no-files-found: error

@@ -1,0 +1,166 @@
+name: Release
+
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+
+jobs:
+
+  generate-project:
+    name: Generate WixToolset
+    uses: ./.github/workflows/generate-wixtoolset-v5-project.yaml
+
+  release:
+    name: Release
+    runs-on: windows-latest
+    needs: generate-project
+
+    steps:
+
+      - name: Download WixToolset project
+        uses: actions/download-artifact@v4
+        with:
+          name: project
+          path: project
+      
+      - name: Set environment variable for the installer version
+        run: |
+          $archives_dir = Join-Path "${{ github.workspace }}" -ChildPath "project" | Join-Path -ChildPath "archives-wixtoolset";
+          if ((Get-ChildItem $archives_dir | Where-Object Name -Match "\d+\.\d+\.\d+" | Select-Object -First 1 -ExpandProperty Name) -match "\b(\d+\.\d+\.\d+)\b")
+          {
+            $installer_version = $Matches[1];
+            Add-Content "${{ github.env }}" "INSTALLER_VERSION=${installer_version}";
+            Add-Content "${{ github.env }}" "INSTALLER_ARCHIVES_DIR=${archives_dir}"; 
+          }
+          else
+          {
+            $red = (0x1b -as [char]) + "[31m";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            Write-Host ($red + "Unable to find the installer version" + $nocolor);
+            exit /B 1;
+          }
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        name: Setup MSVC development prompt
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.x
+      
+      - name: Install WixToolset v5
+        run: dotnet tool install --global wix --version 5.0.1
+      
+      - name: Install WixToolset.UI extension v5
+        run: wix extension add -g WixToolset.UI.wixext/5.0.1
+      
+      - name: Extract the zip file
+        run: |
+          $archive_en_us = Join-Path "${{ env.INSTALLER_ARCHIVES_DIR }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us.zip";
+          $en_us_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us";
+
+          Expand-Archive $archive_en_us -Destination $en_us_dir;
+
+          $en_us_msi_dir = Join-Path $en_us_dir -ChildPath "wixtoolset-v5";
+
+          Add-Content "${{ github.env }}" "EN_US_MSI_DIR=${en_us_msi_dir}";
+
+          $archive_pt_br = Join-Path "${{ env.INSTALLER_ARCHIVES_DIR }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br.zip";
+          $pt_br_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br";
+
+          Expand-Archive $archive_pt_br -Destination $pt_br_dir;
+
+          $pt_br_msi_dir = Join-Path $pt_br_dir -ChildPath "wixtoolset-v5";
+
+          Add-Content "${{ github.env }}" "PT_BR_MSI_DIR=${pt_br_msi_dir}";
+      
+      - name: Build MSI installer for en-us culture
+        run: |
+          cd "${{ env.EN_US_MSI_DIR }}";
+          & .\msi.bat;
+
+      - name: Build MSI installer for pt-br culture
+        run: |
+          cd "${{ env.PT_BR_MSI_DIR }}";
+          & .\msi.bat;
+      
+      - name: Prepare directory to upload
+        run: |
+          mkdir distribution;
+          Copy-Item project distribution -Recurse
+
+          $zip_files_dir = Join-Path "${{ runner.temp }}" -ChildPath "zip-files-dir";
+          mkdir $zip_files_dir;
+
+          $en_us_dir = Join-Path $zip_files_dir -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us";
+          mkdir $en_us_dir;
+          Get-ChildItem "${{ env.EN_US_MSI_DIR }}" | Where-Object { ".wixpdb", ".cab", ".msi" -contains $_.Extension } | ForEach-Object {
+            Copy-Item ($_.FullName) $en_us_dir;
+
+            $current_file_sha256_hash = Get-FileHash ($_.FullName) -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
+            $current_file_md5_hash = Get-FileHash ($_.FullName) -Algorithm MD5 | Select-Object -ExpandProperty Hash;
+            $current_file_sha256_file = Join-Path $en_us_dir -ChildPath ($_.Name + "-SHA256.txt");
+            $current_file_md5_file = Join-Path $en_us_dir -ChildPath ($_.Name + "-MD5.txt");
+            Set-Content -Path $current_file_sha256_file -Value $current_file_sha256_hash -NoNewline;
+            Set-Content -Path $current_file_md5_file -Value $current_file_md5_hash -NoNewline;
+
+            if ($_.Extension -eq ".msi")
+            {
+              Copy-Item $current_file_sha256_file distribution;
+              Copy-Item $current_file_md5_file distribution;
+              Copy-Item ($_.FullName) distribution;
+            }
+          }
+          $en_us_zip = "${en_us_dir}.zip";
+          Compress-Archive -Path $en_us_dir -DestinationPath $en_us_zip;
+          $en_us_zip_sha256_hash = Get-FileHash $en_us_zip -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
+          $en_us_zip_md5_hash = Get-FileHash $en_us_zip -Algorithm MD5 | Select-Object -ExpandProperty Hash;
+          $en_us_zip_sha256_file = Join-Path distribution -ChildPath ((Get-Item $en_us_zip | Select-Object -ExpandProperty Name) + "-SHA256.txt");
+          $en_us_zip_md5_file = Join-Path distribution -ChildPath ((Get-Item $en_us_zip | Select-Object -ExpandProperty Name) + "-MD5.txt");
+          Set-Content -Path $en_us_zip_sha256_file -Value $en_us_zip_sha256_hash -NoNewline;
+          Set-Content -Path $en_us_zip_md5_file -Value $en_us_zip_md5_hash -NoNewline;
+          Copy-Item $en_us_zip distribution;
+
+          $pt_br_dir = Join-Path $zip_files_dir -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br";
+          mkdir $pt_br_dir;
+          Get-ChildItem "${{ env.PT_BR_MSI_DIR }}" | Where-Object { ".wixpdb", ".cab", ".msi" -contains $_.Extension } | ForEach-Object {
+            Copy-Item ($_.FullName) $pt_br_dir;
+
+            $current_file_sha256_hash = Get-FileHash ($_.FullName) -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
+            $current_file_md5_hash = Get-FileHash ($_.FullName) -Algorithm MD5 | Select-Object -ExpandProperty Hash;
+            $current_file_sha256_file = Join-Path $pt_br_dir -ChildPath ($_.Name + "-SHA256.txt");
+            $current_file_md5_file = Join-Path $pt_br_dir -ChildPath ($_.Name + "-MD5.txt");
+            Set-Content -Path $current_file_sha256_file -Value $current_file_sha256_hash -NoNewline;
+            Set-Content -Path $current_file_md5_file -Value $current_file_md5_hash -NoNewline;
+
+            if ($_.Extension -eq ".msi")
+            {
+              Copy-Item $current_file_sha256_file distribution;
+              Copy-Item $current_file_md5_file distribution;
+              Copy-Item ($_.FullName) distribution;
+            }
+          }
+          $pt_br_zip = "${pt_br_dir}.zip";
+          Compress-Archive -Path $pt_br_dir -DestinationPath $pt_br_zip;
+          $pt_br_zip_sha256_hash = Get-FileHash $pt_br_zip -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
+          $pt_br_zip_md5_hash = Get-FileHash $pt_br_zip -Algorithm MD5 | Select-Object -ExpandProperty Hash;
+          $pt_br_zip_sha256_file = Join-Path distribution -ChildPath ((Get-Item $pt_br_zip | Select-Object -ExpandProperty Name) + "-SHA256.txt");
+          $pt_br_zip_md5_file = Join-Path distribution -ChildPath ((Get-Item $pt_br_zip | Select-Object -ExpandProperty Name) + "-MD5.txt");
+          Set-Content -Path $pt_br_zip_sha256_file -Value $pt_br_zip_sha256_hash -NoNewline;
+          Set-Content -Path $pt_br_zip_md5_file -Value $pt_br_zip_md5_hash -NoNewline;
+          Copy-Item $pt_br_zip distribution;
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ env.INSTALLER_VERSION }}
+          path: distribution
+          retention-days: 1
+          if-no-files-found: error

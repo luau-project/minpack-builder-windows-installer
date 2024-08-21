@@ -1,0 +1,132 @@
+name: Build Minpack Builder with MSYS2 tools
+
+on:
+  workflow_call:
+    inputs:
+      system:
+        required: true
+        type: string
+  
+jobs:
+  
+  build:
+    name: Build Minpack
+    runs-on: windows-latest
+  
+    steps:
+
+      - name: Check system input
+        run: |
+          $allowed_system = @{ ucrt64 = "ucrt-x86_64"; mingw64 = "x86_64"; mingw32 = "i686"; clang64 = "clang-x86_64" };
+          $msys = "${{ inputs.system }}".ToLower();
+
+          if ($allowed_system.Keys -contains $msys)
+          {
+            $menv = $allowed_system[$msys];
+            Add-Content "${{ github.env }}" "SAFE_MSYS2_SYS=${msys}";
+            Add-Content "${{ github.env }}" "SAFE_MSYS2_ENV=${menv}";
+          }
+          else
+          {
+            $red = (0x1b -as [char]) + "[31m";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            $keys = $allowed_system.Keys;
+            Write-Host ($red + "system: ${{ inputs.system }}" + $nocolor + " is not allowed. Possible values are: " + $yellow + "$keys" + $nocolor);
+            exit /B 1;
+          }
+    
+      - name: Download source code artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: source-code
+          path: source-code
+      
+      - name: Install MSYS2 tools
+        run: |
+          $msys = "${{ env.SAFE_MSYS2_SYS }}";
+          $menv = "${{ env.SAFE_MSYS2_ENV }}";
+          $msys_bin = "C:\msys64\${msys}\bin";
+
+          C:\msys64\usr\bin\bash -lc "pacman -S mingw-w64-${menv}-cc mingw-w64-${menv}-fc mingw-w64-${menv}-make --noconfirm --overwrite *";
+          Add-Content "${{ github.path }}" $msys_bin;
+
+          if ($msys.IndexOf("clang") -ge 0)
+          {
+            Add-Content "${{ github.env }}" "FC=flang";
+            Add-Content "${{ github.env }}" "CC=clang";
+          }
+          else
+          {
+            Add-Content "${{ github.env }}" "FC=gfortran";
+            Add-Content "${{ github.env }}" "CC=gcc";
+          }
+      
+      - name: Setup environment variables for the build
+        run: |
+          $msys = "${{ env.SAFE_MSYS2_SYS }}";
+          $upload_dir = Join-Path "${{ github.workspace }}" -ChildPath $msys;
+          mkdir $upload_dir;
+
+          $install_dir = Join-Path "${upload_dir}" -ChildPath "binaries";
+          $source_dir = Join-Path "${{ github.workspace }}" -ChildPath "source-code" | Join-Path -ChildPath "minpack-builder-with-minpack";
+          $build_dir = Join-Path "${{ runner.temp }}" -ChildPath "build";
+
+          Add-Content "${{ github.env }}" "UploadDir=${msys}";
+          Add-Content "${{ github.env }}" "InstallDir=${install_dir}";
+          Add-Content "${{ github.env }}" "SourceDir=${source_dir}";
+          Add-Content "${{ github.env }}" "BuildDir=${build_dir}";
+          Add-Content "${{ github.env }}" "Generator=MinGW Makefiles";
+
+      - name: Capture the version of the Fortran compiler
+        run: |
+          $compiler_output_file = Join-Path "${{ runner.temp }}" -ChildPath "compiler-output.txt";
+          & "${{ env.FC }}" --version > $compiler_output_file;
+          Write-Host (Get-Content $compiler_output_file);
+
+          $first_line_of_compiler_output = [System.IO.File]::ReadAllLines($compiler_output_file)[0];
+
+          if ($first_line_of_compiler_output -match "\b(\d+\.\d+\.\d+)\b")
+          {
+            $version = $Matches.1;
+            $version_file = Join-Path "${{ env.UploadDir }}" -ChildPath "fortran-compiler-version.txt";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            Write-Host "Compiler version: ${yellow}${version}${nocolor}";
+            Set-Content -Path $version_file -Value $version -NoNewline;
+          }
+          else
+          {
+            $red = (0x1b -as [char]) + "[31m";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            Write-Host ($red + "Unable to find the compiler version" + $nocolor);
+            exit /B 1;
+          }
+      
+      - name: Configure the build of minpack
+        run: |
+          cmake `
+            -G "${{ env.Generator }}" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DBUILD_SHARED_LIBS=ON `
+            -DBUILD_STATIC_LIBS=OFF `
+            -DUSE_DOWNLOAD=OFF `
+            --install-prefix "${{ env.InstallDir }}" `
+            -S "${{ env.SourceDir }}" `
+            -B "${{ env.BuildDir }}";
+
+      - name: Build minpack
+        run: cmake --build "${{ env.BuildDir }}" --config Release
+
+      - name: Install minpack
+        run: cmake --install "${{ env.BuildDir }}" --config Release
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.UploadDir }}
+          path: ${{ env.UploadDir }}
+          retention-days: 1
+          if-no-files-found: error
+      
