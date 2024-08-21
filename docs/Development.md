@@ -80,13 +80,18 @@ If the command succeed, the source files for the ```WiX Toolset``` project will 
 
 ## Building the MSI installer
 
+> [!TIP]
+> 
+> The previous steps can be run either on Linux or Windows. However, you are required to be on Windows to build the MSI installer.
+
 > [!IMPORTANT]
 > 
-> In order to build the MSI package on this step, you need the ```wix``` command line program on a Windows machine.
-> 
-> ```cmd
-> dotnet tool install --global wix --version 5.0.1
-> ```
+> Required tools:
+> * ```dotnet``` command line program for .NET 6.0 or newer (visit [https://dotnet.microsoft.com](https://dotnet.microsoft.com) to install it);
+> * ```wix``` command line program for the [WiX Toolset V5](https://wixtoolset.org/): once ```dotnet``` is installed, run
+>     ```cmd
+>     dotnet tool install --global wix --version 5.0.1
+>     ```
 
 Assuming you got this far, you were able to generate the ```WiX Toolset``` project, and it is stored on the directory ```build/wixtoolset-v5```.
 
