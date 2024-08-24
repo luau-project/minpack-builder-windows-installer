@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(MinpackBuilderInstaller
-    VERSION "1.0.0")
+    VERSION "0.0.1")
 
 if (NOT DEFINED PROJECT_SETTINGS)
     message(FATAL_ERROR "Parameter \"PROJECT_SETTINGS\" not defined. You must supply a json configuration file as cmake parameter: \"-DPROJECT_SETTINGS=path/to/config.json\".")
@@ -12,11 +12,11 @@ if (NOT DEFINED MINPACK_BUILDER_VERSION)
 endif()
 
 if ("${MINPACK_BUILDER_VERSION}" MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)\$")
-    if ((${CMAKE_MATCH_1} LESS "0" OR ${CMAKE_MATCH_1} GREATER "255") OR (${CMAKE_MATCH_2} LESS "0" OR ${CMAKE_MATCH_2} GREATER "255") OR (${CMAKE_MATCH_3} LESS "0" OR ${CMAKE_MATCH_3} GREATER "255"))
-        message(FATAL_ERROR "Parameter \"MINPACK_BUILDER_VERSION\" must match the format X.Y.Z where X, Y and Z are numbers on range 0 - 255.")
+    if ((${CMAKE_MATCH_1} LESS "0" OR ${CMAKE_MATCH_1} GREATER "255") OR (${CMAKE_MATCH_2} LESS "0" OR ${CMAKE_MATCH_2} GREATER "255") OR (${CMAKE_MATCH_3} LESS "0" OR ${CMAKE_MATCH_3} GREATER "65535"))
+        message(FATAL_ERROR "Parameter \"MINPACK_BUILDER_VERSION\" must match the format X.Y.Z where X and Y are numbers on range 0 - 255, and Z is on range 0 - 65535.")
     endif()
 else()
-    message(FATAL_ERROR "Parameter \"MINPACK_BUILDER_VERSION\" must match the format X.Y.Z where X, Y and Z are numbers on range 0 - 255.")
+    message(FATAL_ERROR "Parameter \"MINPACK_BUILDER_VERSION\" must match the format X.Y.Z where X and Y are numbers on range 0 - 255, and Z is on range 0 - 65535.")
 endif()
 
 set(MINPACK_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Directory of the source code of Minpack.")
@@ -40,6 +40,7 @@ set(WIXTOOLSET_MSI_NAME "${WIXTOOLSET_MSI_NAME_WE}.msi")
 set(WIXTOOLSET_PROJECT_DIR "${CMAKE_BINARY_DIR}/wixtoolset-v5")
 set(WIXTOOLSET_PROJECT_INCLUDE_FILE_NAME "MinpackBuilder.wxi")
 set(WIXTOOLSET_PROJECT_MAIN_FILE_NAME "MinpackBuilder.wxs")
+set(WIXTOOLSET_PROJECT_VERSION_FILE_NAME "installer-version.txt")
 set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL "https://github.com/luau-project/minpack-builder")
 set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME "MinpackBuilderDialog.wxs")
 set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME "MinpackBuilderCustomizeDialog.wxs")
@@ -137,6 +138,9 @@ set(__archives_dir "${CMAKE_BINARY_DIR}/archives-wixtoolset")
 
 file(MAKE_DIRECTORY "${__archives_dir}")
 
+set(__installer_version_filename "${__archives_dir}/${WIXTOOLSET_PROJECT_VERSION_FILE_NAME}")
+file(WRITE ${__installer_version_filename} "${PROJECT_VERSION}")
+
 set(__archive_filepath_base "${__archives_dir}/${WIXTOOLSET_MSI_NAME_WE}")
 set(__zip_archive_filename "${__archive_filepath_base}.zip")
 set(__targz_archive_filename "${__archive_filepath_base}.tar.gz")
@@ -155,10 +159,10 @@ execute_process(
     RESULT_VARIABLE targz_archive_res
 )
 
-set(__wixtoolset_archives "${__zip_archive_filename}" "${__targz_archive_filename}")
+set(__hashable_archives "${__zip_archive_filename}" "${__targz_archive_filename}" "${__installer_version_filename}")
 set(__hashes "SHA256" "MD5")
 
-foreach(__file_archive ${__wixtoolset_archives})
+foreach(__file_archive ${__hashable_archives})
     foreach (__hash ${__hashes})
         file(${__hash} ${__file_archive} __hash_value)
         file(WRITE "${__file_archive}-${__hash}.txt" "${__hash_value}")

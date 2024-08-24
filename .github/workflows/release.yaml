@@ -26,24 +26,41 @@ jobs:
       - name: Download WixToolset project
         uses: actions/download-artifact@v4
         with:
-          name: project
-          path: project
+          name: wixtoolset-v5-project
+          path: wixtoolset-v5-project
       
       - name: Set environment variable for the installer version
         run: |
-          $archives_dir = Join-Path "${{ github.workspace }}" -ChildPath "project" | Join-Path -ChildPath "archives-wixtoolset";
-          if ((Get-ChildItem $archives_dir | Where-Object Name -Match "\d+\.\d+\.\d+" | Select-Object -First 1 -ExpandProperty Name) -match "\b(\d+\.\d+\.\d+)\b")
+          $archives_dir = Join-Path "${{ github.workspace }}" -ChildPath "wixtoolset-v5-project";
+          $archives_en_us_dir = Join-Path $archives_dir -ChildPath "en-us";
+          $archives_pt_br_dir = Join-Path $archives_dir -ChildPath "pt-br";
+
+          $installer_version_en_us = Get-Content (Join-Path $archives_en_us_dir -ChildPath "installer-version.txt");
+          $installer_version_pt_br = Get-Content (Join-Path $archives_pt_br_dir -ChildPath "installer-version.txt");
+
+          if ($installer_version_en_us -ne $installer_version_pt_br)
           {
-            $installer_version = $Matches[1];
+            $red = (0x1b -as [char]) + "[31m";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            Write-Host ($red + "Installer version mismatch between en-US and pt-BR" + $nocolor);
+            exit /B 1;
+          }
+
+          $installer_version = $installer_version_en_us;
+
+          if ($installer_version -match "^\b(\d+\.\d+\.\d+)\b$")
+          {
             Add-Content "${{ github.env }}" "INSTALLER_VERSION=${installer_version}";
-            Add-Content "${{ github.env }}" "INSTALLER_ARCHIVES_DIR=${archives_dir}"; 
+            Add-Content "${{ github.env }}" "INSTALLER_ARCHIVES_EN_US_DIR=${archives_en_us_dir}";
+            Add-Content "${{ github.env }}" "INSTALLER_ARCHIVES_PT_BR_DIR=${archives_pt_br_dir}";
           }
           else
           {
             $red = (0x1b -as [char]) + "[31m";
             $yellow = (0x1b -as [char]) + "[33m";
             $nocolor = (0x1b -as [char]) + "[0m";
-            Write-Host ($red + "Unable to find the installer version" + $nocolor);
+            Write-Host ($red + "Invalid format for the installer version" + $nocolor);
             exit /B 1;
           }
 
@@ -61,9 +78,9 @@ jobs:
       - name: Install WixToolset.UI extension v5
         run: wix extension add -g WixToolset.UI.wixext/5.0.1
       
-      - name: Extract the zip file
+      - name: Extract the compressed archives
         run: |
-          $archive_en_us = Join-Path "${{ env.INSTALLER_ARCHIVES_DIR }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us.zip";
+          $archive_en_us = Join-Path "${{ env.INSTALLER_ARCHIVES_EN_US_DIR }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us.zip";
           $en_us_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us";
 
           Expand-Archive $archive_en_us -Destination $en_us_dir;
@@ -72,7 +89,7 @@ jobs:
 
           Add-Content "${{ github.env }}" "EN_US_MSI_DIR=${en_us_msi_dir}";
 
-          $archive_pt_br = Join-Path "${{ env.INSTALLER_ARCHIVES_DIR }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br.zip";
+          $archive_pt_br = Join-Path "${{ env.INSTALLER_ARCHIVES_PT_BR_DIR }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br.zip";
           $pt_br_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br";
 
           Expand-Archive $archive_pt_br -Destination $pt_br_dir;
@@ -94,12 +111,11 @@ jobs:
       - name: Prepare directory to upload
         run: |
           mkdir distribution;
-          Copy-Item project distribution -Recurse
 
           $zip_files_dir = Join-Path "${{ runner.temp }}" -ChildPath "zip-files-dir";
           mkdir $zip_files_dir;
 
-          $en_us_dir = Join-Path $zip_files_dir -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us";
+          $en_us_dir = Join-Path $zip_files_dir -ChildPath "dev-en-us";
           mkdir $en_us_dir;
           Get-ChildItem "${{ env.EN_US_MSI_DIR }}" | Where-Object { ".wixpdb", ".cab", ".msi" -contains $_.Extension } | ForEach-Object {
             Copy-Item ($_.FullName) $en_us_dir;
@@ -128,7 +144,7 @@ jobs:
           Set-Content -Path $en_us_zip_md5_file -Value $en_us_zip_md5_hash -NoNewline;
           Copy-Item $en_us_zip distribution;
 
-          $pt_br_dir = Join-Path $zip_files_dir -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br";
+          $pt_br_dir = Join-Path $zip_files_dir -ChildPath "dev-pt-br";
           mkdir $pt_br_dir;
           Get-ChildItem "${{ env.PT_BR_MSI_DIR }}" | Where-Object { ".wixpdb", ".cab", ".msi" -contains $_.Extension } | ForEach-Object {
             Copy-Item ($_.FullName) $pt_br_dir;

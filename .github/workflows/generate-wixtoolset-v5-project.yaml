@@ -8,7 +8,7 @@ jobs:
     uses: ./.github/workflows/source-code.yaml
     with:
       download-from-netlib: ${{ github.ref_name == 'release' || startsWith(github.ref, 'refs/tags/') }}
-      minpack-builder-version: '1.1.0'
+      minpack-builder-version: 1.1.0
   
   build-mingw32:
     name: GFortran MINGW32
@@ -252,18 +252,17 @@ jobs:
             --install-prefix "${{ env.INSTALL_PREFIX_PT_BR }}" \
             -S "${{ env.SOURCE_DIR }}" \
             -B "${{ env.BUILD_DIR_PT_BR }}";
-      
+            
       - name: Prepare directory to upload
         run: |
-          rm -rf project && mkdir -p project
-          cp "${{ github.workspace }}/source-code/minpack-builder-version.txt" project
-          cp -r ${{ env.UPLOAD_DIR_EN_US }} project
-          cp -r ${{ env.UPLOAD_DIR_PT_BR }} project
+          rm -rf wixtoolset-v5-project && mkdir -p wixtoolset-v5-project
+          cp -r "${{ env.UPLOAD_DIR_EN_US }}" wixtoolset-v5-project/en-us
+          cp -r "${{ env.UPLOAD_DIR_PT_BR }}" wixtoolset-v5-project/pt-br
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: project
-          path: project
+          name: wixtoolset-v5-project
+          path: wixtoolset-v5-project
           retention-days: 1
           if-no-files-found: error

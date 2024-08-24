@@ -172,7 +172,7 @@ jobs:
             cp $entry "${{ github.workspace }}/source-code/minpack-builder-with-minpack";
           done
 
-          echo "${{ inputs.minpack-builder-version }}" > "${{ github.workspace }}/source-code/minpack-builder-version.txt"
+          echo -n "${{ inputs.minpack-builder-version }}" > "${{ github.workspace }}/source-code/minpack-builder-version.txt"
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
