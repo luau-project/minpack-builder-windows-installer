@@ -101,35 +101,35 @@ jobs:
           compiler_settings["${id}_id"]="MSYSTwoMINGWThreeTwo";
           compiler_settings["${id}_name"]="GFortran MINGW32 from MSYS2";
           compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
-          compiler_settings["${id}_hostarch"]="x32";
+          compiler_settings["${id}_hostarch"]="i686";
           compiler_ids+=("${id}");
 
           id="mingw64";
           compiler_settings["${id}_id"]="MSYSTwoMINGWSixFour";
           compiler_settings["${id}_name"]="GFortran MINGW64 from MSYS2";
           compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
-          compiler_settings["${id}_hostarch"]="x64";
+          compiler_settings["${id}_hostarch"]="x86_64";
           compiler_ids+=("${id}");
 
           id="ucrt64";
           compiler_settings["${id}_id"]="MSYSTwoUCRTSixFour";
           compiler_settings["${id}_name"]="GFortran UCRT64 from MSYS2";
           compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
-          compiler_settings["${id}_hostarch"]="x64";
+          compiler_settings["${id}_hostarch"]="x86_64";
           compiler_ids+=("${id}");
 
           id="clang64";
           compiler_settings["${id}_id"]="MSYSTwoCLANGSixFour";
           compiler_settings["${id}_name"]="LLVM Flang-New GCC-like CLANG64 from MSYS2";
           compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
-          compiler_settings["${id}_hostarch"]="x64";
+          compiler_settings["${id}_hostarch"]="x86_64";
           compiler_ids+=("${id}");
 
           id="llvm-flang-new-msvc-like";
           compiler_settings["${id}_id"]="LLVMFlangNewMsvcLike";
           compiler_settings["${id}_name"]="LLVM Flang-New MSVC-like from conda-forge";
           compiler_settings["${id}_version"]=$(cat ${id}/fortran-compiler-version.txt);
-          compiler_settings["${id}_hostarch"]="x64";
+          compiler_settings["${id}_hostarch"]="x86_64";
           compiler_ids+=("${id}");
 
           project_settings_json="${{ runner.temp }}/project-settings.json";

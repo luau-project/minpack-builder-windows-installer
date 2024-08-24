@@ -3,6 +3,7 @@
 * [Description](#description)
 * [How to insert binaries for a compiler](#how-to-insert-binaries-for-a-compiler)
 * [How to generate the WiX Toolset project](#how-to-generate-the-wix-toolset-project)
+* [Requirements to build the MSI installer](#requirements-to-build-the-msi-installer)
 * [Building the MSI installer](#building-the-msi-installer)
 
 ## Description
@@ -21,7 +22,7 @@ The json configuration file must hold the root element as a json array whose ele
         "CompilerId": "GFortranUCRTSixFour",
         "CompilerName": "GFortran UCRT64 from MSYS2",
         "Version": "14.2.0",
-        "HostArch": "x64"
+        "HostArch": "x86_64"
     },
     .
     .
@@ -31,12 +32,12 @@ The json configuration file must hold the root element as a json array whose ele
         "CompilerId": "LLVMFlangNewMsvcLike",
         "CompilerName": "LLVM flang-new MSVC-like",
         "Version": "18.1.7",
-        "HostArch": "x64"
+        "HostArch": "x86_64"
     }
 ]
 ```
 
-Each element of the array must provide an unique ```CompilerId``` field to identify the compiler. Moreover, other fields such as ```CompilerName```, ```Version``` and ```HostArch``` help to describe the compiler properties to the end user. For instance, the first array element above shows information for ```GFortran 14.2.0``` using the universal C runtime from MSYS2 project targeting 64-bit architecture, while the last element identifies the ```LLVM flang-new 18.1.7``` emiting MSVC ABI-compatible binaries targeting 64-bit arch.
+Each element of the array must provide an unique ```CompilerId``` field to identify the compiler. Moreover, other fields such as ```CompilerName```, ```Version``` and ```HostArch``` help to describe the compiler properties to the end user. For instance, the first array element above shows information for ```GFortran 14.2.0``` using the universal C runtime from MSYS2 project targeting Windows Intel/AMD 64-bit version, which runs natively on and compiles for Windows 64-bit, while the last element identifies the ```LLVM flang-new 18.1.7``` emiting MSVC ABI-compatible binaries.
 
 ## How to generate the WiX Toolset project
 
@@ -78,7 +79,7 @@ cmake -DPROJECT_SETTINGS=path/to/settings.json -DGFortranUCRTSixFour_BINARIES_DI
 
 If the command succeed, the source files for the ```WiX Toolset``` project will be stored at ```build/wixtoolset-v5```.
 
-## Building the MSI installer
+## Requirements to build the MSI installer
 
 > [!TIP]
 > 
@@ -103,7 +104,12 @@ wix extension add -g WixToolset.UI.wixext/5.0.1
 > 
 > The addition of WixToolset.UI extension to the global cache only needs to be done once
 
-Assuming you got this far, you were able to generate the ```WiX Toolset``` project, and it is stored on the directory ```build/wixtoolset-v5```.
+## Building the MSI installer
+
+Congratulations if you got this far, because:
+* you were able to generate the ```WiX Toolset``` project, which is assumed to be stored at ```build/wixtoolset-v5```;
+* you managed to meet the requirements to build the MSI installer;
+* you are ready to build the MSI installer.
 
 Then, using a command prompt on a Windows machine, you can now change directory to ```build/wixtoolset-v5``` and execute the file ```msi.bat```, which builds the MSI package.
 
