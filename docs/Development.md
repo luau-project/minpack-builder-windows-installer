@@ -5,6 +5,7 @@
 * [How to generate the WiX Toolset project](#how-to-generate-the-wix-toolset-project)
 * [Requirements to build the MSI installer](#requirements-to-build-the-msi-installer)
 * [Building the MSI installer](#building-the-msi-installer)
+* [Known limitations](#known-limitations)
 
 ## Description
 
@@ -115,4 +116,16 @@ Then, using a command prompt on a Windows machine, you can now change directory 
 
 ```cmd
 cd build\wixtoolset-v5 && msi.bat
-``` 
+```
+
+## Known limitations
+
+In the current stage, the MSI installer works fine using the graphical user interface provided by Programs and Features (also known as Add/Remove Programs).
+
+> [!IMPORTANT]
+>
+> It is known to **NOT** behave correctly through quiet command line installs:
+> 
+> ```cmd
+> C:\path\to\installer.msi /qn
+> ```

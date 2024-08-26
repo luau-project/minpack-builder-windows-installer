@@ -12,166 +12,107 @@ on:
 
 jobs:
 
+  get-source-code:
+    name: Source code
+    uses: ./.github/workflows/source-code.yaml
+    with:
+      download-from-netlib: ${{ github.ref_name == 'release' || startsWith(github.ref, 'refs/tags/') }}
+      minpack-builder-version: 1.1.0
+  
+  build-mingw32:
+    name: GFortran MINGW32
+    uses: ./.github/workflows/msys2.yaml
+    needs: get-source-code
+    with:
+      system: mingw32
+
+  build-mingw64:
+    name: GFortran MINGW64
+    uses: ./.github/workflows/msys2.yaml
+    needs: get-source-code
+    with:
+      system: mingw64
+
+  build-ucrt64:
+    name: GFortran UCRT64
+    uses: ./.github/workflows/msys2.yaml
+    needs: get-source-code
+    with:
+      system: ucrt64
+
+  build-clang64:
+    name: LLVM flang-new GCC-like
+    uses: ./.github/workflows/msys2.yaml
+    needs: get-source-code
+    with:
+      system: clang64
+
+  build-llvm-flang-new-msvc-like:
+    name: LLVM flang-new MSVC-like
+    uses: ./.github/workflows/llvm-flang-new-msvc-like.yaml
+    needs: get-source-code
+
   generate-project:
     name: Generate WixToolset
     uses: ./.github/workflows/generate-wixtoolset-v5-project.yaml
+    needs:
+      - get-source-code
+      - build-mingw32
+      - build-mingw64
+      - build-ucrt64
+      - build-clang64
+      - build-llvm-flang-new-msvc-like
+
+  msi-en-us:
+    name: MSI for en-US
+    uses: ./.github/workflows/msi.yaml
+    needs:
+      - generate-project
+    with:
+      culture: en-us
+
+  msi-pt-br:
+    name: MSI for pt-BR
+    uses: ./.github/workflows/msi.yaml
+    needs:
+      - generate-project
+    with:
+      culture: pt-br
 
   release:
     name: Release
-    runs-on: windows-latest
-    needs: generate-project
-
+    runs-on: ubuntu-latest
+    needs:
+      - msi-en-us
+      - msi-pt-br
+    
     steps:
-
-      - name: Download WixToolset project
+      - name: Download MSI for en-US culture
         uses: actions/download-artifact@v4
         with:
-          name: wixtoolset-v5-project
-          path: wixtoolset-v5-project
-      
-      - name: Set environment variable for the installer version
-        run: |
-          $archives_dir = Join-Path "${{ github.workspace }}" -ChildPath "wixtoolset-v5-project";
-          $archives_en_us_dir = Join-Path $archives_dir -ChildPath "en-us";
-          $archives_pt_br_dir = Join-Path $archives_dir -ChildPath "pt-br";
+          name: msi-en-us
+          path: msi-en-us
 
-          $installer_version_en_us = Get-Content (Join-Path $archives_en_us_dir -ChildPath "installer-version.txt");
-          $installer_version_pt_br = Get-Content (Join-Path $archives_pt_br_dir -ChildPath "installer-version.txt");
-
-          if ($installer_version_en_us -ne $installer_version_pt_br)
-          {
-            $red = (0x1b -as [char]) + "[31m";
-            $yellow = (0x1b -as [char]) + "[33m";
-            $nocolor = (0x1b -as [char]) + "[0m";
-            Write-Host ($red + "Installer version mismatch between en-US and pt-BR" + $nocolor);
-            exit /B 1;
-          }
-
-          $installer_version = $installer_version_en_us;
-
-          if ($installer_version -match "^\b(\d+\.\d+\.\d+)\b$")
-          {
-            Add-Content "${{ github.env }}" "INSTALLER_VERSION=${installer_version}";
-            Add-Content "${{ github.env }}" "INSTALLER_ARCHIVES_EN_US_DIR=${archives_en_us_dir}";
-            Add-Content "${{ github.env }}" "INSTALLER_ARCHIVES_PT_BR_DIR=${archives_pt_br_dir}";
-          }
-          else
-          {
-            $red = (0x1b -as [char]) + "[31m";
-            $yellow = (0x1b -as [char]) + "[33m";
-            $nocolor = (0x1b -as [char]) + "[0m";
-            Write-Host ($red + "Invalid format for the installer version" + $nocolor);
-            exit /B 1;
-          }
-
-      - uses: ilammy/msvc-dev-cmd@v1
-        name: Setup MSVC development prompt
-
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+      - name: Download MSI for pt-BR culture
+        uses: actions/download-artifact@v4
         with:
-          dotnet-version: 6.x
-      
-      - name: Install WixToolset v5
-        run: dotnet tool install --global wix --version 5.0.1
-      
-      - name: Install WixToolset.UI extension v5
-        run: wix extension add -g WixToolset.UI.wixext/5.0.1
-      
-      - name: Extract the compressed archives
-        run: |
-          $archive_en_us = Join-Path "${{ env.INSTALLER_ARCHIVES_EN_US_DIR }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us.zip";
-          $en_us_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-en-us";
-
-          Expand-Archive $archive_en_us -Destination $en_us_dir;
-
-          $en_us_msi_dir = Join-Path $en_us_dir -ChildPath "wixtoolset-v5";
-
-          Add-Content "${{ github.env }}" "EN_US_MSI_DIR=${en_us_msi_dir}";
-
-          $archive_pt_br = Join-Path "${{ env.INSTALLER_ARCHIVES_PT_BR_DIR }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br.zip";
-          $pt_br_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-pt-br";
-
-          Expand-Archive $archive_pt_br -Destination $pt_br_dir;
-
-          $pt_br_msi_dir = Join-Path $pt_br_dir -ChildPath "wixtoolset-v5";
-
-          Add-Content "${{ github.env }}" "PT_BR_MSI_DIR=${pt_br_msi_dir}";
-      
-      - name: Build MSI installer for en-us culture
-        run: |
-          cd "${{ env.EN_US_MSI_DIR }}";
-          & .\msi.bat;
-
-      - name: Build MSI installer for pt-br culture
-        run: |
-          cd "${{ env.PT_BR_MSI_DIR }}";
-          & .\msi.bat;
+          name: msi-pt-br
+          path: msi-pt-br
       
       - name: Prepare directory to upload
         run: |
-          mkdir distribution;
-
-          $zip_files_dir = Join-Path "${{ runner.temp }}" -ChildPath "zip-files-dir";
-          mkdir $zip_files_dir;
-
-          $en_us_dir = Join-Path $zip_files_dir -ChildPath "dev-en-us";
-          mkdir $en_us_dir;
-          Get-ChildItem "${{ env.EN_US_MSI_DIR }}" | Where-Object { ".wixpdb", ".cab", ".msi" -contains $_.Extension } | ForEach-Object {
-            Copy-Item ($_.FullName) $en_us_dir;
-
-            $current_file_sha256_hash = Get-FileHash ($_.FullName) -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
-            $current_file_md5_hash = Get-FileHash ($_.FullName) -Algorithm MD5 | Select-Object -ExpandProperty Hash;
-            $current_file_sha256_file = Join-Path $en_us_dir -ChildPath ($_.Name + "-SHA256.txt");
-            $current_file_md5_file = Join-Path $en_us_dir -ChildPath ($_.Name + "-MD5.txt");
-            Set-Content -Path $current_file_sha256_file -Value $current_file_sha256_hash -NoNewline;
-            Set-Content -Path $current_file_md5_file -Value $current_file_md5_hash -NoNewline;
-
-            if ($_.Extension -eq ".msi")
-            {
-              Copy-Item $current_file_sha256_file distribution;
-              Copy-Item $current_file_md5_file distribution;
-              Copy-Item ($_.FullName) distribution;
-            }
-          }
-          $en_us_zip = "${en_us_dir}.zip";
-          Compress-Archive -Path $en_us_dir -DestinationPath $en_us_zip;
-          $en_us_zip_sha256_hash = Get-FileHash $en_us_zip -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
-          $en_us_zip_md5_hash = Get-FileHash $en_us_zip -Algorithm MD5 | Select-Object -ExpandProperty Hash;
-          $en_us_zip_sha256_file = Join-Path distribution -ChildPath ((Get-Item $en_us_zip | Select-Object -ExpandProperty Name) + "-SHA256.txt");
-          $en_us_zip_md5_file = Join-Path distribution -ChildPath ((Get-Item $en_us_zip | Select-Object -ExpandProperty Name) + "-MD5.txt");
-          Set-Content -Path $en_us_zip_sha256_file -Value $en_us_zip_sha256_hash -NoNewline;
-          Set-Content -Path $en_us_zip_md5_file -Value $en_us_zip_md5_hash -NoNewline;
-          Copy-Item $en_us_zip distribution;
-
-          $pt_br_dir = Join-Path $zip_files_dir -ChildPath "dev-pt-br";
-          mkdir $pt_br_dir;
-          Get-ChildItem "${{ env.PT_BR_MSI_DIR }}" | Where-Object { ".wixpdb", ".cab", ".msi" -contains $_.Extension } | ForEach-Object {
-            Copy-Item ($_.FullName) $pt_br_dir;
-
-            $current_file_sha256_hash = Get-FileHash ($_.FullName) -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
-            $current_file_md5_hash = Get-FileHash ($_.FullName) -Algorithm MD5 | Select-Object -ExpandProperty Hash;
-            $current_file_sha256_file = Join-Path $pt_br_dir -ChildPath ($_.Name + "-SHA256.txt");
-            $current_file_md5_file = Join-Path $pt_br_dir -ChildPath ($_.Name + "-MD5.txt");
-            Set-Content -Path $current_file_sha256_file -Value $current_file_sha256_hash -NoNewline;
-            Set-Content -Path $current_file_md5_file -Value $current_file_md5_hash -NoNewline;
-
-            if ($_.Extension -eq ".msi")
-            {
-              Copy-Item $current_file_sha256_file distribution;
-              Copy-Item $current_file_md5_file distribution;
-              Copy-Item ($_.FullName) distribution;
-            }
-          }
-          $pt_br_zip = "${pt_br_dir}.zip";
-          Compress-Archive -Path $pt_br_dir -DestinationPath $pt_br_zip;
-          $pt_br_zip_sha256_hash = Get-FileHash $pt_br_zip -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
-          $pt_br_zip_md5_hash = Get-FileHash $pt_br_zip -Algorithm MD5 | Select-Object -ExpandProperty Hash;
-          $pt_br_zip_sha256_file = Join-Path distribution -ChildPath ((Get-Item $pt_br_zip | Select-Object -ExpandProperty Name) + "-SHA256.txt");
-          $pt_br_zip_md5_file = Join-Path distribution -ChildPath ((Get-Item $pt_br_zip | Select-Object -ExpandProperty Name) + "-MD5.txt");
-          Set-Content -Path $pt_br_zip_sha256_file -Value $pt_br_zip_sha256_hash -NoNewline;
-          Set-Content -Path $pt_br_zip_md5_file -Value $pt_br_zip_md5_hash -NoNewline;
-          Copy-Item $pt_br_zip distribution;
+          installer_version_en_us=$(cat msi-en-us/installer-version.txt);
+          installer_version_pt_br=$(cat msi-pt-br/installer-version.txt);
+          if [ "${installer_version_en_us}" != "${installer_version_pt_br}" ];
+          then
+            bash -lc "echo -e 'Installer version mismatch between culture en-US and pt-BR: \e[33men-US version (${installer_version_en_us})\e[0m is not equal to \e[33m pt-BR version (${installer_version_pt_br})\e[0m'";
+            exit 1;
+          fi
+          installer_version=${installer_version_en_us}
+          echo "INSTALLER_VERSION=${installer_version}" >> $GITHUB_ENV
+          rm -rf distribution && mkdir -p distribution
+          cp -r msi-en-us distribution
+          cp -r msi-pt-br distribution
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

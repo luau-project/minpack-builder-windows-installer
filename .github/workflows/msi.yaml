@@ -1,0 +1,115 @@
+name: MSI
+
+on:
+  workflow_call:
+    inputs:
+      culture:
+        required: true
+        type: string
+
+jobs:
+
+  msi:
+    name: MSI in the culture ${{ inputs.culture }}
+    runs-on: windows-latest
+
+    steps:
+
+      - name: Download WixToolset project
+        uses: actions/download-artifact@v4
+        with:
+          name: wixtoolset-v5-project
+          path: wixtoolset-v5-project
+      
+      - name: Validate culture input
+        run: |
+          $culture_lower = "${{ inputs.culture }}".ToLower();
+          if (-not (@("en-us", "pt-br") -contains ${culture_lower}))
+          {
+            $red = (0x1b -as [char]) + "[31m";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            Write-Host "${red}Invalid culture. Possible values are: ${yellow}en-US${nocolor} and ${yellow}pt-BR${nocolor}";
+            exit /B 1;
+          }
+
+          Add-Content "${{ github.env }}" "SAFE_CULTURE=${culture_lower}";
+
+      - name: Set environment variable for the installer version
+        run: |
+          $archives_dir = Join-Path "${{ github.workspace }}" -ChildPath "wixtoolset-v5-project";
+          $archives_culture_dir = Join-Path $archives_dir -ChildPath "${{ env.SAFE_CULTURE }}";
+
+          $installer_version = Get-Content (Join-Path $archives_culture_dir -ChildPath "installer-version.txt");
+
+          if ($installer_version -match "^\b(\d+\.\d+\.\d+)\b$")
+          {
+            Add-Content "${{ github.env }}" "INSTALLER_VERSION=${installer_version}";
+            Add-Content "${{ github.env }}" "INSTALLER_ARCHIVES=${archives_culture_dir}";
+          }
+          else
+          {
+            $red = (0x1b -as [char]) + "[31m";
+            $yellow = (0x1b -as [char]) + "[33m";
+            $nocolor = (0x1b -as [char]) + "[0m";
+            Write-Host ($red + "Invalid format for the installer version" + $nocolor);
+            exit /B 1;
+          }
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        name: Setup MSVC development prompt
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.x
+      
+      - name: Install WixToolset v5
+        run: dotnet tool install --global wix --version 5.0.1
+      
+      - name: Install WixToolset.UI extension v5
+        run: wix extension add -g WixToolset.UI.wixext/5.0.1
+      
+      - name: Extract the compressed archives
+        run: |
+          $archive = Join-Path "${{ env.INSTALLER_ARCHIVES }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-${{ env.SAFE_CULTURE }}.zip";
+          $archive_temp_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-${{ env.SAFE_CULTURE }}";
+
+          Expand-Archive $archive -Destination $archive_temp_dir;
+
+          $archive_msi_dir = Join-Path $archive_temp_dir -ChildPath "wixtoolset-v5";
+
+          Add-Content "${{ github.env }}" "MSI_DIR=${archive_msi_dir}";
+      
+      - name: Build the MSI installer
+        run: |
+          cd "${{ env.MSI_DIR }}";
+          & .\msi.bat;
+      
+      - name: Prepare directory to upload
+        run: |
+          mkdir distribution;
+
+          Get-ChildItem "${{ env.MSI_DIR }}" | Where-Object { ".wixpdb", ".cab", ".msi" -contains $_.Extension } | ForEach-Object {
+            Copy-Item ($_.FullName) distribution;
+
+            $current_file_sha256_hash = Get-FileHash ($_.FullName) -Algorithm SHA256 | Select-Object -ExpandProperty Hash;
+            $current_file_md5_hash = Get-FileHash ($_.FullName) -Algorithm MD5 | Select-Object -ExpandProperty Hash;
+            $current_file_sha256_file = Join-Path distribution -ChildPath ($_.Name + "-SHA256.txt");
+            $current_file_md5_file = Join-Path distribution -ChildPath ($_.Name + "-MD5.txt");
+            Set-Content -Path $current_file_sha256_file -Value $current_file_sha256_hash -NoNewline;
+            Set-Content -Path $current_file_md5_file -Value $current_file_md5_hash -NoNewline;
+          }
+
+          Set-Content -Path (Join-Path distribution -ChildPath "culture.txt") -Value "${{ env.SAFE_CULTURE }}" -NoNewline;
+          Set-Content -Path (Join-Path distribution -ChildPath "installer-version.txt") -Value "${{ env.INSTALLER_VERSION }}" -NoNewline;
+          
+          Copy-Item (Join-Path wixtoolset-v5-project -ChildPath "project-settings.json") distribution
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msi-${{ inputs.culture }}
+          path: distribution
+          retention-days: 1
+          if-no-files-found: error
