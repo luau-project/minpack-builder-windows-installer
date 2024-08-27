@@ -8,6 +8,7 @@
         <ComponentGroup Id="@compiler_id@InstalledCompilersComponentGroup">
             <?foreach InstalledCompilerId in $(ListOfInstalledCompilers)?>
                 <ComponentRef Id="$(InstalledCompilerId)IdRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(InstalledCompilerId)IndexRegistryOn@compiler_id@"/>
                 <ComponentRef Id="$(InstalledCompilerId)NameRegistryOn@compiler_id@"/>
                 <ComponentRef Id="$(InstalledCompilerId)VersionRegistryOn@compiler_id@"/>
                 <ComponentRef Id="$(InstalledCompilerId)HostArchRegistryOn@compiler_id@"/>

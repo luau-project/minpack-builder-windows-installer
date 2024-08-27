@@ -11,10 +11,22 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\$(@c_id_other@Index)">
                 <RegistryValue Type="string"
                     Name="Id"
                     Value="@c_id_other@"/>
+            </RegistryKey>
+        </Component>
+
+        <!-- Component for the Index entry on registry -->
+        <Component Id="@c_id_other@IndexRegistryOn@compiler_id@" Guid="$(@c_id_other@IndexRegistryOn@compiler_id@Guid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(InstalledCompilersRegistryKey)\$(@c_id_other@Index)">
+                <RegistryValue Type="integer"
+                    Name="Index"
+                    Value="$(@c_id_other@Index)"/>
             </RegistryKey>
         </Component>
 
@@ -23,7 +35,7 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\$(@c_id_other@Index)">
                 <RegistryValue Type="string"
                     Name="Name"
                     Value="$(@c_id_other@CompilerName)"/>
@@ -35,7 +47,7 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\$(@c_id_other@Index)">
                 <RegistryValue Type="string"
                     Name="Version"
                     Value="$(@c_id_other@Version)"/>
@@ -47,7 +59,7 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\$(@c_id_other@Index)">
                 <RegistryValue Type="string"
                     Name="HostArch"
                     Value="$(@c_id_other@HostArch)"/>
@@ -59,7 +71,7 @@
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(InstalledCompilersRegistryKey)\@c_index_other@">
+                Key="$(InstalledCompilersRegistryKey)\$(@c_id_other@Index)">
                 <RegistryValue Type="string"
                     Name="InstallDir"
                     Value="[@c_id_other@InstallDir]"/>

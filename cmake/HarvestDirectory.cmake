@@ -4,7 +4,9 @@ function(__harvest_dir_core directory out_file wix_path_var relative_to depth co
 
     math(EXPR __next_depth "${depth} + 1" OUTPUT_FORMAT DECIMAL)
     get_tabs_indentation(${__next_depth} __dir_indentation)
-    set(__component_indentation "${__dir_indentation}\t")
+
+    math(EXPR __next_next_depth "${__next_depth} + 1" OUTPUT_FORMAT DECIMAL)
+    get_tabs_indentation(${__next_next_depth} __component_indentation)
 
     set(__components_id "")
 
@@ -16,7 +18,9 @@ function(__harvest_dir_core directory out_file wix_path_var relative_to depth co
 
         if (IS_DIRECTORY ${__path})
             set(__dir_id "directory${__guid}")
-            file_append_line(${out_file} "${__dir_indentation}<Directory Id=\"${__dir_id}\" Name=\"${__windows_like_path}\">")
+            get_filename_component(__dirname ${__path} NAME)
+
+            file_append_line(${out_file} "${__dir_indentation}<Directory Id=\"${__dir_id}\" Name=\"${__dirname}\">")
             __harvest_dir_core(${__path} ${out_file} ${wix_path_var} ${relative_to} ${__next_depth} __components_id_subdir)
             file_append_line(${out_file} "${__dir_indentation}</Directory>")
 

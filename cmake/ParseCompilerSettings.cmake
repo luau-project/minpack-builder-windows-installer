@@ -22,12 +22,13 @@ function(__get_compiler_setting json_content element_index json_field json_filed
     set(${out_value} "${_json_field_value}" PARENT_SCOPE)
 endfunction()
 
-function(__write_compiler_config_wxi compiler_id compiler_name compiler_version compiler_hostarch)
+function(__write_compiler_config_wxi compiler_id compiler_index compiler_name compiler_version compiler_hostarch)
     
     set(__guids_for_compiler_properties
         "EnvironmentVariable"
         "EnvironmentVariableOnPath"
         "CMakePrefixPath"
+        "UpgradeCodeRegistry"
         "ListOfInstalledCompilersRegistry"
         "NumberOfInstalledCompilersRegistry"
         "MinpackBuilderSourceCodeDirRegistry"
@@ -35,6 +36,7 @@ function(__write_compiler_config_wxi compiler_id compiler_name compiler_version 
         "MinpackBuilderInstallDirRegistry"
         "MinpackBuilderVersionRegistry"
         "MinpackBuilderInstallerVersionRegistry"
+        "IndexRegistry"
         "NameRegistry"
         "VersionRegistry"
         "HostArchRegistry"
@@ -43,6 +45,7 @@ function(__write_compiler_config_wxi compiler_id compiler_name compiler_version 
     append_blank_line_on_project_config_wxi()
     append_comment_on_project_config_wxi("start of ${compiler_id} settings")
     append_define_on_project_config_wxi("${compiler_id}CompilerName" "${compiler_name}")
+    append_define_on_project_config_wxi("${compiler_id}Index" "${compiler_index}")
     append_define_on_project_config_wxi("${compiler_id}Version" "${compiler_version}")
     append_define_on_project_config_wxi("${compiler_id}HostArch" "${compiler_hostarch}")
     append_define_on_project_config_wxi("${compiler_id}DisplayText" "\$(${compiler_id}CompilerName) \$(${compiler_id}Version) \$(${compiler_id}HostArch)")
@@ -71,6 +74,7 @@ function(__write_installed_compiler_config_wxi compiler_ids)
     
     set(__guids_for_compiler_properties
         "IdRegistry"
+        "IndexRegistry"
         "NameRegistry"
         "VersionRegistry"
         "HostArchRegistry"
@@ -125,6 +129,7 @@ function(parse_compiler_settings_from_json json_file compiler_ids)
 
     set(_compiler_ids "")
     set(_compiler_ids_upper "")
+    set(_compiler_combined_props_upper "")
     
     set(_index "0")
     while("${_index}" LESS "${_data_length}")
@@ -153,12 +158,19 @@ function(parse_compiler_settings_from_json json_file compiler_ids)
             list(APPEND _compiler_ids "${compiler_id}")
             list(APPEND _compiler_ids_upper "${compiler_id_upper}")
         endif()
-
+        
         __get_compiler_setting("${json_file_content}" "${_index}" "CompilerName" "STRING" compiler_name)
         __get_compiler_setting("${json_file_content}" "${_index}" "Version" "STRING" compiler_version)
         __get_compiler_setting("${json_file_content}" "${_index}" "HostArch" "STRING" compiler_hostarch)
+        
+        string(TOUPPER "${compiler_name}-${compiler_version}-${compiler_hostarch}" combined_prop_upper)
+        if ("${combined_prop_upper}" IN_LIST _compiler_combined_props_upper)
+            message(FATAL_ERROR "An case-insensitive entry containing the same name (\"${compiler_name}\"), version (${compiler_version}) and host arch (${compiler_hostarch}) is already defined. Please, choose different compiler settings at index ${_index} on file \"${json_file}\".")
+        else()
+            list(APPEND _compiler_combined_props_upper "${combined_prop_upper}")
+        endif()
 
-        __write_compiler_config_wxi("${compiler_id}" "${compiler_name}" "${compiler_version}" "${compiler_hostarch}")
+        __write_compiler_config_wxi("${compiler_id}" "${_index}" "${compiler_name}" "${compiler_version}" "${compiler_hostarch}")
 
         configure_file(
             templates/CompilerChoiceProperty.wxs.in

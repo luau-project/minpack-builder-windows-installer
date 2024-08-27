@@ -79,6 +79,18 @@
             </RegistryKey>
         </Component>
 
+        <!-- Component to store information on registry about the upgrade code -->
+        <Component Id="@compiler_id@UpgradeCodeRegistry" Guid="$(@compiler_id@UpgradeCodeRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(MinpackBuilderRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="UpgradeCode"
+                    Value="$(UpgradeCode)"/>
+            </RegistryKey>
+        </Component>
+
         <!-- Component to store information on registry about the list of installed compilers -->
         <Component Id="@compiler_id@ListOfInstalledCompilersRegistry" Guid="$(@compiler_id@ListOfInstalledCompilersRegistryGuid)">
             <RegistryKey
@@ -126,6 +138,16 @@
                     Value="$(@compiler_id@CompilerName)"/>
             </RegistryKey>
         </Component>
+        <Component Id="@compiler_id@IndexRegistry" Guid="$(@compiler_id@IndexRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(ActiveCompilerRegistryKey)">
+                <RegistryValue Type="integer"
+                    Name="Index"
+                    Value="$(@compiler_id@Index)"/>
+            </RegistryKey>
+        </Component>
         <Component Id="@compiler_id@VersionRegistry" Guid="$(@compiler_id@VersionRegistryGuid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
@@ -170,12 +192,16 @@
             <ComponentRef Id="@compiler_id@MinpackBuilderVersionRegistry"/>
             <ComponentRef Id="@compiler_id@MinpackBuilderInstallerVersionRegistry"/>
 
+            <!-- References to components containing information about the upgrade code -->
+            <ComponentRef Id="@compiler_id@UpgradeCodeRegistry"/>
+
             <!-- References to components containing information about installed compilers -->
             <ComponentRef Id="@compiler_id@ListOfInstalledCompilersRegistry"/>
             <ComponentRef Id="@compiler_id@NumberOfInstalledCompilersRegistry"/>
             
             <!-- References to components containing information about the active compiler (@compiler_id@) -->
             <ComponentRef Id="@compiler_id@ChoicePropertyRegistry"/>
+            <ComponentRef Id="@compiler_id@IndexRegistry"/>
             <ComponentRef Id="@compiler_id@NameRegistry"/>
             <ComponentRef Id="@compiler_id@VersionRegistry"/>
             <ComponentRef Id="@compiler_id@HostArchRegistry"/>
