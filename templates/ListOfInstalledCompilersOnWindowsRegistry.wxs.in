@@ -78,6 +78,18 @@
             </RegistryKey>
         </Component>
 
+        <!-- Component for the FeaturesToRemove entry on registry -->
+        <Component Id="@c_id_other@FeaturesToRemoveRegistryOn@compiler_id@" Guid="$(@c_id_other@FeaturesToRemoveRegistryOn@compiler_id@Guid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(InstalledCompilersRegistryKey)\$(@c_id_other@Index)">
+                <RegistryValue Type="string"
+                    Name="FeaturesToRemove"
+                    Value="$(@c_id_other@FeaturesToRemove)"/>
+            </RegistryKey>
+        </Component>
+
         <!-- Component for the InstallDir entry on registry -->
         <Component Id="@c_id_other@InstallDirRegistryOn@compiler_id@" Guid="$(@c_id_other@InstallDirRegistryOn@compiler_id@Guid)">
             <RegistryKey

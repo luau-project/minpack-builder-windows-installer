@@ -210,12 +210,15 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
     foreach(compiler_id ${compiler_ids})
         __append_blank_line_on_minpack_builder_main_file_wxs(2)
         __append_comment_on_minpack_builder_main_file_wxs(2 "Reference removable features for compiler ${compiler_id}")
-        __append_indented_lines_on_minpack_builder_main_file_wxs(2 "<FeatureRef Id=\"${compiler_id}ChoiceOnReg\" />")
-        __append_indented_lines_on_minpack_builder_main_file_wxs(2 "<FeatureRef Id=\"${compiler_id}EnvVars\" />")
-        __append_indented_lines_on_minpack_builder_main_file_wxs(2 "<FeatureRef Id=\"${compiler_id}InstalledCompilers\" />")
+        __append_indented_lines_on_minpack_builder_main_file_wxs(2 "<FeatureRef Id=\"${compiler_id}Feature\" />")
 
         configure_file(templates/CompilerInstalledCompilers.wxs.in
             "${WIXTOOLSET_PROJECT_DIR}/InstalledCompilersOn${compiler_id}Selection.wxs"
+            @ONLY
+            NEWLINE_STYLE WIN32)
+        
+        configure_file(templates/CompilerFeature.wxs.in
+            "${WIXTOOLSET_PROJECT_DIR}/${compiler_id}Feature.wxs"
             @ONLY
             NEWLINE_STYLE WIN32)
     endforeach()

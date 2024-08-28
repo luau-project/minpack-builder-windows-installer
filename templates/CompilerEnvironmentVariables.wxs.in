@@ -41,8 +41,5 @@
             <ComponentRef Id="@compiler_id@CMakePrefixPathComponent"/>
         </ComponentGroup>
 
-        <Feature Id="@compiler_id@EnvVars" Title="Set Environment Variables for $(@compiler_id@DisplayText)" Level="1">
-            <ComponentGroupRef Id="@compiler_id@EnvironmentVariablesComponentGroup"/>
-        </Feature>
     </Fragment>
 </Wix>

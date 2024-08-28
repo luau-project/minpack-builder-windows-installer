@@ -41,6 +41,7 @@ function(__write_compiler_config_wxi compiler_id compiler_index compiler_name co
         "VersionRegistry"
         "HostArchRegistry"
         "DisplayTextRegistry"
+        "FeaturesToRemoveRegistry"
         "InstallDirRegistry")
     
     append_blank_line_on_project_config_wxi()
@@ -80,15 +81,25 @@ function(__write_installed_compiler_config_wxi compiler_ids)
         "VersionRegistry"
         "HostArchRegistry"
         "DisplayTextRegistry"
+        "FeaturesToRemoveRegistry"
         "InstallDirRegistry")
     
     list(LENGTH compiler_ids number_of_compilers)
 
     foreach(compiler_id ${compiler_ids})
+
+        set(features_from_other_compilers_to_be_removed "")
+
         set(c_index_other "0")
         while("${c_index_other}" LESS "${number_of_compilers}")
 
             list(GET compiler_ids "${c_index_other}" c_id_other)
+
+            if ("${compiler_id}" STREQUAL "${c_id_other}")
+                # do nothing
+            else()
+                list(APPEND features_from_other_compilers_to_be_removed "${c_id_other}Feature")
+            endif()
 
             foreach(__guid_for_prop ${__guids_for_compiler_properties})
                 append_define_guid_on_project_config_wxi("${c_id_other}${__guid_for_prop}On${compiler_id}Guid")
@@ -102,6 +113,11 @@ function(__write_installed_compiler_config_wxi compiler_ids)
 
             MATH(EXPR c_index_other "${c_index_other} + 1")
         endwhile()
+
+        list(JOIN features_from_other_compilers_to_be_removed "," features_to_remove)
+
+        append_define_on_project_config_wxi("${compiler_id}FeaturesToRemove" "${features_to_remove}")
+
     endforeach()
 
 endfunction()
@@ -196,7 +212,6 @@ function(parse_compiler_settings_from_json json_file compiler_ids)
     append_define_on_project_config_wxi("ListOfInstalledCompilers" "${_compiler_ids}")
     append_define_on_project_config_wxi("NumberOfInstalledCompilers" "${_data_length}")
     __write_installed_compiler_config_wxi("${_compiler_ids}")
-
     append_comment_on_project_config_wxi("end of extra settings")
 
     set(${compiler_ids} "${_compiler_ids}" PARENT_SCOPE)

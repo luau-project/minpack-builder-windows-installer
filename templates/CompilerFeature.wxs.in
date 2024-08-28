@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <!-- Load project definitions -->
+    <?include MinpackBuilder.wxi?>
+
+    <Fragment>
+
+        <!-- Feature for compiler @compiler_id@ -->
+        <Feature Id="@compiler_id@Feature" Title="Activate compiler $(@compiler_id@DisplayText)" Level="1">
+            <!-- Reference the component group responsible to set environment variables -->
+            <ComponentGroupRef Id="@compiler_id@EnvironmentVariablesComponentGroup"/>
+
+            <!-- Reference the component group responsible to set all the installed compilers entries on registry -->
+            <ComponentGroupRef Id="@compiler_id@InstalledCompilersComponentGroup"/>
+
+            <!-- Reference the component group responsible to set the active compiler entries on registry -->
+            <ComponentGroupRef Id="@compiler_id@ChoicePropertyComponentGroup"/>
+        </Feature>
+    
+    </Fragment>
+</Wix>
