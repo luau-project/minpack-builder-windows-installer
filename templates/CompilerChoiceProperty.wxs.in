@@ -168,6 +168,16 @@
                     Value="$(@compiler_id@HostArch)"/>
             </RegistryKey>
         </Component>
+        <Component Id="@compiler_id@DisplayTextRegistry" Guid="$(@compiler_id@DisplayTextRegistryGuid)">
+            <RegistryKey
+                ForceDeleteOnUninstall="yes"
+                Root="$(MinpackBuilderRegistryRoot)"
+                Key="$(ActiveCompilerRegistryKey)">
+                <RegistryValue Type="string"
+                    Name="DisplayText"
+                    Value="$(@compiler_id@DisplayText)"/>
+            </RegistryKey>
+        </Component>
         <Component Id="@compiler_id@InstallDirRegistry" Guid="$(@compiler_id@InstallDirRegistryGuid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
@@ -205,6 +215,7 @@
             <ComponentRef Id="@compiler_id@NameRegistry"/>
             <ComponentRef Id="@compiler_id@VersionRegistry"/>
             <ComponentRef Id="@compiler_id@HostArchRegistry"/>
+            <ComponentRef Id="@compiler_id@DisplayTextRegistry"/>
             <ComponentRef Id="@compiler_id@InstallDirRegistry"/>
         </ComponentGroup>
         

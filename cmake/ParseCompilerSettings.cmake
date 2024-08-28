@@ -40,6 +40,7 @@ function(__write_compiler_config_wxi compiler_id compiler_index compiler_name co
         "NameRegistry"
         "VersionRegistry"
         "HostArchRegistry"
+        "DisplayTextRegistry"
         "InstallDirRegistry")
     
     append_blank_line_on_project_config_wxi()
@@ -78,6 +79,7 @@ function(__write_installed_compiler_config_wxi compiler_ids)
         "NameRegistry"
         "VersionRegistry"
         "HostArchRegistry"
+        "DisplayTextRegistry"
         "InstallDirRegistry")
     
     list(LENGTH compiler_ids number_of_compilers)

@@ -12,6 +12,7 @@
                 <ComponentRef Id="$(InstalledCompilerId)NameRegistryOn@compiler_id@"/>
                 <ComponentRef Id="$(InstalledCompilerId)VersionRegistryOn@compiler_id@"/>
                 <ComponentRef Id="$(InstalledCompilerId)HostArchRegistryOn@compiler_id@"/>
+                <ComponentRef Id="$(InstalledCompilerId)DisplayTextRegistryOn@compiler_id@"/>
                 <ComponentRef Id="$(InstalledCompilerId)InstallDirRegistryOn@compiler_id@"/>
             <?endforeach ?>
         </ComponentGroup>
