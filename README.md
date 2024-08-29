@@ -4,14 +4,22 @@
 
 The goal of this repository is to provide a Windows Installer (.msi) to the [MINPACK-1](https://www.netlib.org/minpack) binaries built by our [Minpack Builder](https://github.com/luau-project/minpack-builder) project.
 
-> [!IMPORTANT]
+> [!NOTE]
 > 
-> This project is currently in alpha stage, but the generated files are able to build a working installer. However, be aware that you might find bugs. An improved documentation is coming soon.
+> This project is currently in alpha stage. Be aware that you might find bugs. An improved documentation is coming soon.
 
-## Table of Contents
+## Documentation
 
-* [Development](#development)
+Browse the [documentation](./docs/README.md).
 
-## Development
+## Known limitations
 
-Browse the [documentation](./docs/Development.md).
+In the current stage, the MSI installer works fine using the graphical user interface provided by Programs and Features (also known as Add/Remove Programs).
+
+> [!IMPORTANT]
+>
+> It is known to **NOT** behave correctly through quiet command line installs:
+> 
+> ```cmd
+> C:\path\to\installer.msi /qn
+> ```

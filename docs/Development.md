@@ -1,3 +1,9 @@
+# Development
+
+This section is dedicated to developers willing to help build better Windows installers for the [MINPACK-1](https://www.netlib.org/minpack) library through [Minpack Builder](https://github.com/luau-project/minpack-builder) scripts.
+
+[Back to Documentation](./README.md)
+
 ## Table of Contents
 
 * [Description](#description)
@@ -5,7 +11,6 @@
 * [How to generate the WiX Toolset project](#how-to-generate-the-wix-toolset-project)
 * [Requirements to build the MSI installer](#requirements-to-build-the-msi-installer)
 * [Building the MSI installer](#building-the-msi-installer)
-* [Known limitations](#known-limitations)
 
 ## Description
 
@@ -40,6 +45,8 @@ The json configuration file must hold the root element as a json array whose ele
 
 Each element of the array must provide an unique ```CompilerId``` field to identify the compiler. Moreover, other fields such as ```CompilerName```, ```Version``` and ```HostArch``` help to describe the compiler properties to the end user. For instance, the first array element above shows information for ```GFortran 14.2.0``` using the universal C runtime from MSYS2 project targeting Windows Intel/AMD 64-bit version, which runs natively on and compiles for Windows 64-bit, while the last element identifies the ```LLVM flang-new 18.1.7``` emiting MSVC ABI-compatible binaries.
 
+[Back to ToC](#table-of-contents)
+
 ## How to generate the WiX Toolset project
 
 First, the following are all the required tools used by the project that need to be available on your command prompt (or terminal):
@@ -60,25 +67,25 @@ First, the following are all the required tools used by the project that need to
 * [pandoc](https://pandoc.org)
 * [weasyprint](https://weasyprint.org/)
 
-> [!IMPORTANT]
-> 
-> Required CMake parameters:
-> * ```<<CompilerId>>_BINARIES_DIR```: For each ```CompilerId``` entry in the configuration file, you must provide a respective parameter pointing to the directory where binaries are stored for that compiler. For instance, assuming the configuration file cited
->     ```bash
->     -DGFortranUCRTSixFour_BINARIES_DIR=path/to/gfortran/binaries
->     ```
->     would tell the directory holding gfortran binaries built by Minpack Builder;
-> * ```MINPACK_SOURCES```: Path to the directory containing Minpack source code (directory holding Fortran *.f files, and also the disclaimer);
-> * ```MINPACK_BUILDER_SOURCES```: Path to the directory containing Minpack Builder source code (e.g.: the path on disk to the extracted directory of [https://github.com/luau-project/minpack-builder/archive/refs/tags/1.1.0.zip](https://github.com/luau-project/minpack-builder/archive/refs/tags/1.1.0.zip));
-> * ```MINPACK_BUILDER_VERSION```: Version of Minpack Builder (e.g.: 1.1.0).
+Required CMake parameters:
 
-In the project directory containing [CMakeLists.txt](../CMakeLists.txt), run
+| CMake Parameter | Type | Description |
+|-----------------|------|-------------|
+| ```PROJECT_SETTINGS``` | PATH | Path to the json configuration file. |
+| ```<<CompilerId>>_BINARIES_DIR``` | PATH | For each ```CompilerId``` entry in the configuration file, you must provide a respective parameter pointing to the directory where binaries are stored for that compiler. For instance, assuming the configuration file cited above, ```-DGFortranUCRTSixFour_BINARIES_DIR=path/to/gfortran/binaries``` would tell the directory holding gfortran binaries built by Minpack Builder. |
+| ```MINPACK_SOURCES``` | PATH | Path to the directory containing Minpack source code (directory holding Fortran *.f files, and also the disclaimer). |
+| ```MINPACK_BUILDER_SOURCES``` | PATH | Path to the directory containing Minpack Builder source code (e.g.: the path on disk to the extracted directory of [https://github.com/luau-project/minpack-builder/archive/refs/tags/1.1.0.zip](https://github.com/luau-project/minpack-builder/archive/refs/tags/1.1.0.zip)). |
+| ```MINPACK_BUILDER_VERSION``` | STRING | Version of Minpack Builder (e.g.: 1.1.0). |
+
+In a command prompt (or terminal) in the project directory containing [CMakeLists.txt](../CMakeLists.txt), a valid configuration would be
 
 ```bash
 cmake -DPROJECT_SETTINGS=path/to/settings.json -DGFortranUCRTSixFour_BINARIES_DIR=path/to/gfortran/binaries -DLLVMFlangNewMsvcLike_BINARIES_DIR=path/to/llvm-flang-msvc-like/binaries -DMINPACK_SOURCES=path/to/minpack/source-code -DMINPACK_BUILDER_SOURCES=path/to/minpack-builder/source-code -DMINPACK_BUILDER_VERSION=1.1.0 -S . -B build
 ```
 
 If the command succeed, the source files for the ```WiX Toolset``` project will be stored at ```build/wixtoolset-v5```.
+
+[Back to ToC](#table-of-contents)
 
 ## Requirements to build the MSI installer
 
@@ -105,6 +112,8 @@ wix extension add -g WixToolset.UI.wixext/5.0.1
 > 
 > The addition of WixToolset.UI extension to the global cache only needs to be done once
 
+[Back to ToC](#table-of-contents)
+
 ## Building the MSI installer
 
 Congratulations if you got this far, because:
@@ -118,14 +127,6 @@ Then, using a command prompt on a Windows machine, you can now change directory 
 cd build\wixtoolset-v5 && msi.bat
 ```
 
-## Known limitations
+[Back to ToC](#table-of-contents)
 
-In the current stage, the MSI installer works fine using the graphical user interface provided by Programs and Features (also known as Add/Remove Programs).
-
-> [!IMPORTANT]
->
-> It is known to **NOT** behave correctly through quiet command line installs:
-> 
-> ```cmd
-> C:\path\to\installer.msi /qn
-> ```
+[Back to Documentation](./README.md)
