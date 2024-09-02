@@ -1,4 +1,4 @@
-name: MSI
+name: Build MSI
 
 on:
   workflow_call:
@@ -10,7 +10,7 @@ on:
 jobs:
 
   msi:
-    name: Build MSI ${{ inputs.culture }}
+    name: Build MSI for ${{ inputs.culture }}
     runs-on: windows-latest
 
     steps:

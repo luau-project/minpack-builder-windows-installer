@@ -70,10 +70,14 @@ function(write_ba_project_settings
     msi_registry_key
     msi_active_compiler_id_registry_key
     msi_active_compiler_choice_property
+    msi_upgrade_code_registry_key
+    msi_version_registry_key
     msi_compilers_config_json)
     
     __escape_backslash_string_for_json("${msi_registry_key}" escaped_backslash_msi_registry_key)
     __escape_backslash_string_for_json("${msi_active_compiler_id_registry_key}" escaped_backslash_msi_active_compiler_id_registry_key)
+    __escape_backslash_string_for_json("${msi_upgrade_code_registry_key}" escaped_backslash_msi_upgrade_code_registry_key)
+    __escape_backslash_string_for_json("${msi_version_registry_key}" escaped_backslash_msi_version_registry_key)
 
     set(__json_content "{}")
 
@@ -121,6 +125,14 @@ function(write_ba_project_settings
         "MsiActiveCompilerChoiceProperty" "\"${msi_active_compiler_choice_property}\""
         __json_content)
 
+    __set_json_object_setting(${__json_content}
+        "MsiUpgradeCodeRegistryKey" "\"${escaped_backslash_msi_upgrade_code_registry_key}\""
+        __json_content)
+
+    __set_json_object_setting(${__json_content}
+        "MsiVersionRegistryKey" "\"${escaped_backslash_msi_version_registry_key}\""
+        __json_content)
+    
     __set_json_object_setting(${__json_content}
         "MsiCompilers" "${msi_compilers_config_json}"
         __json_content)
