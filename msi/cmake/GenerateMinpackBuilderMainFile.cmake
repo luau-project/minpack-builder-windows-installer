@@ -53,7 +53,7 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
     __append_comment_on_minpack_builder_main_file_wxs(1 "Load project definitions")
     __append_indented_lines_on_minpack_builder_main_file_wxs(1 "<?include ${WIXTOOLSET_MSI_PROJECT_INCLUDE_FILE_NAME}?>")
     __append_blank_line_on_minpack_builder_main_file_wxs(1)
-    __append_indented_lines_on_minpack_builder_main_file_wxs(1 "<Package Name=\"\$(PackageName)\" Version=\"\$(MinpackBuilderInstallerVersion)\" Manufacturer=\"\$(Manufacturer)\" UpgradeCode=\"\$(UpgradeCode)\" Scope=\"perMachine\" Language=\"\$(MinpackBuilderLanguage)\">")
+    __append_indented_lines_on_minpack_builder_main_file_wxs(1 "<Package Name=\"\$(PackageName)\" Version=\"\$(MinpackBuilderMsiVersion)\" Manufacturer=\"\$(Manufacturer)\" UpgradeCode=\"\$(UpgradeCode)\" Scope=\"perMachine\" Language=\"\$(MinpackBuilderLanguage)\">")
     
     __append_blank_line_on_minpack_builder_main_file_wxs(2)
     __append_comment_on_minpack_builder_main_file_wxs(2 "Embed cabinet on MSI")

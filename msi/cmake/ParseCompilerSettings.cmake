@@ -35,7 +35,7 @@ function(__write_compiler_config_wxi compiler_id compiler_index compiler_name co
         "MinpackSourceCodeDirRegistry"
         "MinpackBuilderInstallDirRegistry"
         "MinpackBuilderVersionRegistry"
-        "MinpackBuilderInstallerVersionRegistry"
+        "MinpackBuilderMsiVersionRegistry"
         "IndexRegistry"
         "NameRegistry"
         "VersionRegistry"

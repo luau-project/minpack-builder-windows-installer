@@ -67,15 +67,15 @@
             </RegistryKey>
         </Component>
 
-        <!-- Component to store information on registry about the version of the Minpack Builder Installer -->
-        <Component Id="@compiler_id@MinpackBuilderInstallerVersionRegistry" Guid="$(@compiler_id@MinpackBuilderInstallerVersionRegistryGuid)">
+        <!-- Component to store information on registry about the version of the Minpack Builder MSI -->
+        <Component Id="@compiler_id@MinpackBuilderMsiVersionRegistry" Guid="$(@compiler_id@MinpackBuilderMsiVersionRegistryGuid)">
             <RegistryKey
                 ForceDeleteOnUninstall="yes"
                 Root="$(MinpackBuilderRegistryRoot)"
                 Key="$(MinpackBuilderRegistryKey)">
                 <RegistryValue Type="string"
-                    Name="InstallerVersion"
-                    Value="$(MinpackBuilderInstallerVersion)"/>
+                    Name="MsiVersion"
+                    Value="$(MinpackBuilderMsiVersion)"/>
             </RegistryKey>
         </Component>
 
@@ -210,7 +210,7 @@
 
             <!-- References to components holding the library version and installer version -->
             <ComponentRef Id="@compiler_id@MinpackBuilderVersionRegistry"/>
-            <ComponentRef Id="@compiler_id@MinpackBuilderInstallerVersionRegistry"/>
+            <ComponentRef Id="@compiler_id@MinpackBuilderMsiVersionRegistry"/>
 
             <!-- References to components containing information about the upgrade code -->
             <ComponentRef Id="@compiler_id@UpgradeCodeRegistry"/>

@@ -101,11 +101,11 @@ jobs:
       
       - name: Prepare directory to upload
         run: |
-          installer_version_en_us=$(cat msi-en-us/installer-version.txt);
-          installer_version_pt_br=$(cat msi-pt-br/installer-version.txt);
+          installer_version_en_us=$(cat msi-en-us/msi-version.txt);
+          installer_version_pt_br=$(cat msi-pt-br/msi-version.txt);
           if [ "${installer_version_en_us}" != "${installer_version_pt_br}" ];
           then
-            bash -lc "echo -e 'Installer version mismatch between culture en-US and pt-BR: \e[33men-US version (${installer_version_en_us})\e[0m is not equal to \e[33m pt-BR version (${installer_version_pt_br})\e[0m'";
+            bash -lc "echo -e 'MSI version mismatch between culture en-US and pt-BR: \e[33men-US version (${installer_version_en_us})\e[0m is not equal to \e[33m pt-BR version (${installer_version_pt_br})\e[0m'";
             exit 1;
           fi
           installer_version=${installer_version_en_us}

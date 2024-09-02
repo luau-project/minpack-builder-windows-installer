@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(MinpackBuilderInstaller
+project(MinpackBuilderMsi
     VERSION "0.0.1")
 
 if (NOT DEFINED PROJECT_SETTINGS)
@@ -42,7 +42,7 @@ set(WIXTOOLSET_MSI_NAME "${WIXTOOLSET_MSI_NAME_WE}.msi")
 set(WIXTOOLSET_MSI_PROJECT_DIR "${CMAKE_CURRENT_BINARY_DIR}/msi-wixtoolset-v5")
 set(WIXTOOLSET_MSI_PROJECT_INCLUDE_FILE_NAME "MinpackBuilder.wxi")
 set(WIXTOOLSET_MSI_PROJECT_MAIN_FILE_NAME "MinpackBuilder.wxs")
-set(WIXTOOLSET_MSI_PROJECT_VERSION_FILE_NAME "installer-version.txt")
+set(WIXTOOLSET_MSI_PROJECT_VERSION_FILE_NAME "msi-version.txt")
 set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL "https://github.com/luau-project/minpack-builder")
 set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME "MinpackBuilderDialog.wxs")
 set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME "MinpackBuilderCustomizeDialog.wxs")
@@ -68,7 +68,7 @@ append_define_on_project_config_wxi("Manufacturer" "Luau Project")
 append_define_on_project_config_wxi("ProductName" "Minpack Builder")
 append_define_on_project_config_wxi("MinpackBuilderLanguage" "${__MinpackBuilderLCID}")
 append_define_on_project_config_wxi("MinpackBuilderVersion" "${MINPACK_BUILDER_VERSION}")
-append_define_on_project_config_wxi("MinpackBuilderInstallerVersion" "${PROJECT_VERSION}")
+append_define_on_project_config_wxi("MinpackBuilderMsiVersion" "${PROJECT_VERSION}")
 append_define_on_project_config_wxi("PackageName" "\$(ProductName) \$(MinpackBuilderVersion)")
 append_define_on_project_config_wxi("MinpackBuilderRegistryRoot" "HKLM")
 append_define_on_project_config_wxi("MinpackBuilderRegistryKey" "Software\\\$(Manufacturer)\\\$(ProductName)")

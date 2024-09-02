@@ -40,7 +40,7 @@ jobs:
           $archives_dir = Join-Path "${{ github.workspace }}" -ChildPath "msi-wixtoolset-v5-project";
           $archives_culture_dir = Join-Path $archives_dir -ChildPath "${{ env.SAFE_CULTURE }}";
 
-          $installer_version = Get-Content (Join-Path $archives_culture_dir -ChildPath "installer-version.txt");
+          $installer_version = Get-Content (Join-Path $archives_culture_dir -ChildPath "msi-version.txt");
 
           if ($installer_version -match "^\b(\d+\.\d+\.\d+)\b$")
           {
@@ -72,8 +72,8 @@ jobs:
       
       - name: Extract the compressed archives
         run: |
-          $archive = Join-Path "${{ env.INSTALLER_ARCHIVES }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-${{ env.SAFE_CULTURE }}.zip";
-          $archive_temp_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderInstaller-${{ env.INSTALLER_VERSION }}-${{ env.SAFE_CULTURE }}";
+          $archive = Join-Path "${{ env.INSTALLER_ARCHIVES }}" -ChildPath "MinpackBuilderMsi-${{ env.INSTALLER_VERSION }}-${{ env.SAFE_CULTURE }}.zip";
+          $archive_temp_dir = Join-Path "${{ runner.temp }}" -ChildPath "MinpackBuilderMsi-${{ env.INSTALLER_VERSION }}-${{ env.SAFE_CULTURE }}";
 
           Expand-Archive $archive -Destination $archive_temp_dir;
 
@@ -102,7 +102,7 @@ jobs:
           }
 
           Set-Content -Path (Join-Path distribution -ChildPath "culture.txt") -Value "${{ env.SAFE_CULTURE }}" -NoNewline;
-          Set-Content -Path (Join-Path distribution -ChildPath "installer-version.txt") -Value "${{ env.INSTALLER_VERSION }}" -NoNewline;
+          Set-Content -Path (Join-Path distribution -ChildPath "msi-version.txt") -Value "${{ env.INSTALLER_VERSION }}" -NoNewline;
           
           Copy-Item (Join-Path msi-wixtoolset-v5-project -ChildPath "project-settings.json") distribution
 
