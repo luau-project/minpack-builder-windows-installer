@@ -1,5 +1,5 @@
 function(write_minpack_builder_license_rtf)
-    set(__target_dir "${CMAKE_BINARY_DIR}")
+    set(__target_dir "${CMAKE_CURRENT_BINARY_DIR}")
 
     file(MAKE_DIRECTORY ${__target_dir})
 
@@ -22,19 +22,19 @@ function(write_minpack_builder_license_rtf)
     file_append_line(${__target_file} "")
     file(READ "${MINPACK_BUILDER_SOURCES}/LICENSE.md" __license_md)
     string(REPLACE
-        "${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}"
-        "[${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}](${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL})"
+        "${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}"
+        "[${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}](${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL})"
         __license_md
         "${__license_md}")
     file_append_line(${__target_file} "${__license_md}")
 
-    convert_to_rtf("${__target_file}" "${WIXTOOLSET_PROJECT_DIR}/${WIXTOOLSET_PROJECT_MINPACK_BUILDER_LICENSE_RTF_FILE_NAME}" "End-User License Agreement")
+    convert_to_rtf("${__target_file}" "${WIXTOOLSET_MSI_PROJECT_DIR}/${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_LICENSE_RTF_FILE_NAME}" "End-User License Agreement")
 
     file(REMOVE ${__target_file})
 endfunction()
 
 function(write_minpack_builder_license_pdf)
-    set(__target_dir "${CMAKE_BINARY_DIR}")
+    set(__target_dir "${CMAKE_CURRENT_BINARY_DIR}")
 
     file(MAKE_DIRECTORY ${__target_dir})
 
@@ -57,13 +57,13 @@ function(write_minpack_builder_license_pdf)
     file_append_line(${__target_file} "")
     file(READ "${MINPACK_BUILDER_SOURCES}/LICENSE.md" __license_md)
     string(REPLACE
-        "${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}"
-        "[${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}](${WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL})"
+        "${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}"
+        "[${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL}](${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL})"
         __license_md
         "${__license_md}")
     file_append_line(${__target_file} "${__license_md}")
 
-    convert_to_pdf("${__target_file}" "${WIXTOOLSET_PROJECT_DIR}/${WIXTOOLSET_PROJECT_MINPACK_BUILDER_LICENSE_PDF_FILE_NAME}" "End-User License Agreement")
+    convert_to_pdf("${__target_file}" "${WIXTOOLSET_MSI_PROJECT_DIR}/${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_LICENSE_PDF_FILE_NAME}" "End-User License Agreement")
     
     file(REMOVE ${__target_file})
 endfunction()

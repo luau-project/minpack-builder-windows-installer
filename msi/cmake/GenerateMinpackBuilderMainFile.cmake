@@ -1,9 +1,9 @@
 function(__begin_minpack_builder_main_file_wxs)
-    set(__target_dir "${WIXTOOLSET_PROJECT_DIR}")
+    set(__target_dir "${WIXTOOLSET_MSI_PROJECT_DIR}")
 
     file(MAKE_DIRECTORY ${__target_dir})
 
-    set(__target_file "${__target_dir}/${WIXTOOLSET_PROJECT_MAIN_FILE_NAME}")
+    set(__target_file "${__target_dir}/${WIXTOOLSET_MSI_PROJECT_MAIN_FILE_NAME}")
 
     if (EXISTS ${__target_file})
         file(REMOVE ${__target_file})
@@ -14,8 +14,8 @@ function(__begin_minpack_builder_main_file_wxs)
 endfunction()
 
 function(__append_lines_on_minpack_builder_main_file_wxs lines)
-    set(__target_dir "${WIXTOOLSET_PROJECT_DIR}")
-    set(__target_file "${__target_dir}/${WIXTOOLSET_PROJECT_MAIN_FILE_NAME}")
+    set(__target_dir "${WIXTOOLSET_MSI_PROJECT_DIR}")
+    set(__target_file "${__target_dir}/${WIXTOOLSET_MSI_PROJECT_MAIN_FILE_NAME}")
 
     if (NOT EXISTS ${__target_file})
         message(FATAL_ERROR "File \"${__target_file}\" not found")
@@ -51,7 +51,7 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
     __begin_minpack_builder_main_file_wxs()
     __append_blank_line_on_minpack_builder_main_file_wxs(1)
     __append_comment_on_minpack_builder_main_file_wxs(1 "Load project definitions")
-    __append_indented_lines_on_minpack_builder_main_file_wxs(1 "<?include ${WIXTOOLSET_PROJECT_INCLUDE_FILE_NAME}?>")
+    __append_indented_lines_on_minpack_builder_main_file_wxs(1 "<?include ${WIXTOOLSET_MSI_PROJECT_INCLUDE_FILE_NAME}?>")
     __append_blank_line_on_minpack_builder_main_file_wxs(1)
     __append_indented_lines_on_minpack_builder_main_file_wxs(1 "<Package Name=\"\$(PackageName)\" Version=\"\$(MinpackBuilderInstallerVersion)\" Manufacturer=\"\$(Manufacturer)\" UpgradeCode=\"\$(UpgradeCode)\" Scope=\"perMachine\" Language=\"\$(MinpackBuilderLanguage)\">")
     
@@ -79,13 +79,13 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
     __append_indented_lines_on_minpack_builder_main_file_wxs(6 "<Directory Id=\"MinpackSourceCodeDir\" Name=\"Minpack\" />")
 
     get_filename_component(__minpack_sources_dir_name "${MINPACK_SOURCES}" NAME)
-    set(__minpack_sources_dir "${WIXTOOLSET_PROJECT_DIR}/minpack-source-code/${__minpack_sources_dir_name}")
+    set(__minpack_sources_dir "${WIXTOOLSET_MSI_PROJECT_DIR}/minpack-source-code/${__minpack_sources_dir_name}")
 
     if (IS_DIRECTORY "${__minpack_sources_dir}/minpack-source-code")
         file(REMOVE_RECURSE "${__minpack_sources_dir}/minpack-source-code")
     endif()
 
-    file(COPY "${MINPACK_SOURCES}" DESTINATION "${WIXTOOLSET_PROJECT_DIR}/minpack-source-code")
+    file(COPY "${MINPACK_SOURCES}" DESTINATION "${WIXTOOLSET_MSI_PROJECT_DIR}/minpack-source-code")
 
     if (NOT EXISTS "${__minpack_sources_dir}")
         message(FATAL_ERROR "Minpack source code directory not found.")
@@ -93,7 +93,7 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
 
     harvest_directory(
         "${__minpack_sources_dir}"
-        "${WIXTOOLSET_PROJECT_DIR}/MinpackSourceCode.wxs"
+        "${WIXTOOLSET_MSI_PROJECT_DIR}/MinpackSourceCode.wxs"
         "MinpackBuilder.wxi"
         "MinpackSourceCodeDirectory"
         "MinpackSourceCodeDir"
@@ -110,13 +110,13 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
     __append_comment_on_minpack_builder_main_file_wxs(5 "end of Source code")
         
     get_filename_component(__minpack_builder_sources_dir_name "${MINPACK_BUILDER_SOURCES}" NAME)
-    set(__minpack_builder_sources_dir "${WIXTOOLSET_PROJECT_DIR}/minpack-builder-source-code/${__minpack_builder_sources_dir_name}")
+    set(__minpack_builder_sources_dir "${WIXTOOLSET_MSI_PROJECT_DIR}/minpack-builder-source-code/${__minpack_builder_sources_dir_name}")
 
     if (IS_DIRECTORY "${__minpack_builder_sources_dir}/minpack-builder-source-code")
         file(REMOVE_RECURSE "${__minpack_builder_sources_dir}/minpack-builder-source-code")
     endif()
 
-    file(COPY "${MINPACK_BUILDER_SOURCES}" DESTINATION "${WIXTOOLSET_PROJECT_DIR}/minpack-builder-source-code")
+    file(COPY "${MINPACK_BUILDER_SOURCES}" DESTINATION "${WIXTOOLSET_MSI_PROJECT_DIR}/minpack-builder-source-code")
 
     if (NOT EXISTS "${__minpack_builder_sources_dir}")
         message(FATAL_ERROR "MinpackBuilder source code directory not found.")
@@ -124,7 +124,7 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
 
     harvest_directory(
         "${__minpack_builder_sources_dir}"
-        "${WIXTOOLSET_PROJECT_DIR}/MinpackBuilderSourceCode.wxs"
+        "${WIXTOOLSET_MSI_PROJECT_DIR}/MinpackBuilderSourceCode.wxs"
         "MinpackBuilder.wxi"
         "MinpackBuilderSourceCodeDirectory"
         "MinpackBuilderSourceCodeDir"
@@ -175,13 +175,13 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
 
     foreach(compiler_id ${compiler_ids})
         get_filename_component(__compiler_binaries_dir_name "${${compiler_id}_BINARIES_DIR}" NAME)
-        set(__compiler_binaries_dir "${WIXTOOLSET_PROJECT_DIR}/binaries/${compiler_id}/${__compiler_binaries_dir_name}")
+        set(__compiler_binaries_dir "${WIXTOOLSET_MSI_PROJECT_DIR}/binaries/${compiler_id}/${__compiler_binaries_dir_name}")
 
         if (IS_DIRECTORY "${__compiler_binaries_dir}/${__compiler_binaries_dir_name}")
             file(REMOVE_RECURSE "${__compiler_binaries_dir}/${__compiler_binaries_dir_name}")
         endif()
 
-        file(COPY "${${compiler_id}_BINARIES_DIR}" DESTINATION "${WIXTOOLSET_PROJECT_DIR}/binaries/${compiler_id}")
+        file(COPY "${${compiler_id}_BINARIES_DIR}" DESTINATION "${WIXTOOLSET_MSI_PROJECT_DIR}/binaries/${compiler_id}")
 
         if (NOT EXISTS "${__compiler_binaries_dir}")
             message(FATAL_ERROR "MinpackBuilder source code directory not found.")
@@ -189,7 +189,7 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
 
         harvest_directory(
             "${__compiler_binaries_dir}"
-            "${WIXTOOLSET_PROJECT_DIR}/${compiler_id}Binaries.wxs"
+            "${WIXTOOLSET_MSI_PROJECT_DIR}/${compiler_id}Binaries.wxs"
             "MinpackBuilder.wxi"
             "${compiler_id}BinariesDir"
             "${compiler_id}InstallDir"
@@ -202,7 +202,7 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
         __append_indented_lines_on_minpack_builder_main_file_wxs(2 "</Feature>")
 
         configure_file(templates/CompilerEnvironmentVariables.wxs.in
-            "${WIXTOOLSET_PROJECT_DIR}/${compiler_id}EnvironmentVariables.wxs"
+            "${WIXTOOLSET_MSI_PROJECT_DIR}/${compiler_id}EnvironmentVariables.wxs"
             @ONLY
             NEWLINE_STYLE WIN32)
     endforeach()
@@ -213,12 +213,12 @@ function(write_minpack_builder_main_file_wxs compiler_ids)
         __append_indented_lines_on_minpack_builder_main_file_wxs(2 "<FeatureRef Id=\"${compiler_id}Feature\" />")
 
         configure_file(templates/CompilerInstalledCompilers.wxs.in
-            "${WIXTOOLSET_PROJECT_DIR}/InstalledCompilersOn${compiler_id}Selection.wxs"
+            "${WIXTOOLSET_MSI_PROJECT_DIR}/InstalledCompilersOn${compiler_id}Selection.wxs"
             @ONLY
             NEWLINE_STYLE WIN32)
         
         configure_file(templates/CompilerFeature.wxs.in
-            "${WIXTOOLSET_PROJECT_DIR}/${compiler_id}Feature.wxs"
+            "${WIXTOOLSET_MSI_PROJECT_DIR}/${compiler_id}Feature.wxs"
             @ONLY
             NEWLINE_STYLE WIN32)
     endforeach()

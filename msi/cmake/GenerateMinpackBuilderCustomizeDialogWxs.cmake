@@ -1,9 +1,9 @@
 function(__begin_minpack_builder_customize_dialog_wxs)
-    set(__target_dir "${WIXTOOLSET_PROJECT_DIR}")
+    set(__target_dir "${WIXTOOLSET_MSI_PROJECT_DIR}")
 
     file(MAKE_DIRECTORY ${__target_dir})
 
-    set(__target_file "${__target_dir}/${WIXTOOLSET_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME}")
+    set(__target_file "${__target_dir}/${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME}")
 
     if (EXISTS ${__target_file})
         file(REMOVE ${__target_file})
@@ -14,8 +14,8 @@ function(__begin_minpack_builder_customize_dialog_wxs)
 endfunction()
 
 function(__append_lines_on_minpack_builder_customize_dialog_wxs lines)
-    set(__target_dir "${WIXTOOLSET_PROJECT_DIR}")
-    set(__target_file "${__target_dir}/${WIXTOOLSET_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME}")
+    set(__target_dir "${WIXTOOLSET_MSI_PROJECT_DIR}")
+    set(__target_file "${__target_dir}/${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME}")
 
     if (NOT EXISTS ${__target_file})
         message(FATAL_ERROR "File \"${__target_file}\" not found")
@@ -51,7 +51,7 @@ function(write_minpack_builder_customize_dialog_wxs compiler_ids)
     __begin_minpack_builder_customize_dialog_wxs()
     __append_blank_line_on_minpack_builder_customize_dialog_wxs(1)
     __append_comment_on_minpack_builder_customize_dialog_wxs(1 "Load project definitions")
-    __append_indented_lines_on_minpack_builder_customize_dialog_wxs(1 "<?include ${WIXTOOLSET_PROJECT_INCLUDE_FILE_NAME}?>")
+    __append_indented_lines_on_minpack_builder_customize_dialog_wxs(1 "<?include ${WIXTOOLSET_MSI_PROJECT_INCLUDE_FILE_NAME}?>")
     __append_blank_line_on_minpack_builder_customize_dialog_wxs(1)
     __append_indented_lines_on_minpack_builder_customize_dialog_wxs(1 "<Fragment>")
     __append_indented_lines_on_minpack_builder_customize_dialog_wxs(2 "<UI>")

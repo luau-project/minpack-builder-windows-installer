@@ -3,8 +3,8 @@ name: Generate WixToolset
 on: workflow_call
 
 jobs:
-  generate-project:
-    name: Generate WixToolset
+  generate-msi-project:
+    name: Generate MSI Project
     runs-on: ubuntu-latest
 
     steps:
@@ -137,15 +137,15 @@ jobs:
           minpack_builder_version=$(cat "${{ github.workspace }}/source-code/minpack-builder-version.txt");
           minpack_builder_sources="${{ github.workspace }}/source-code/minpack-builder";
           minpack_sources="${{ github.workspace }}/source-code/minpack";
-          source_dir="${{ github.workspace }}/minpack-builder-windows-installer";
+          source_dir="${{ github.workspace }}/minpack-builder-windows-installer/msi";
 
           build_dir_en_us="${{ github.workspace }}/build-en_us";
           install_prefix_en_us="${{ runner.temp }}/install-en_us";
-          upload_dir_en_us=$(basename ${build_dir_en_us})/archives-wixtoolset;
+          upload_dir_en_us=$(basename ${build_dir_en_us})/msi-archives-wixtoolset;
 
           build_dir_pt_br="${{ github.workspace }}/build-pt_br";
           install_prefix_pt_br="${{ runner.temp }}/install-pt_br";
-          upload_dir_pt_br=$(basename ${build_dir_pt_br})/archives-wixtoolset;
+          upload_dir_pt_br=$(basename ${build_dir_pt_br})/msi-archives-wixtoolset;
 
           MSYSTwoMINGWThreeTwo_BINARIES_DIR="${{ github.workspace }}/mingw32/binaries";
           MSYSTwoMINGWSixFour_BINARIES_DIR="${{ github.workspace }}/mingw64/binaries";
@@ -208,15 +208,15 @@ jobs:
             
       - name: Prepare directory to upload
         run: |
-          rm -rf wixtoolset-v5-project && mkdir -p wixtoolset-v5-project
-          cp "${{ env.CONFIG_FILE }}" wixtoolset-v5-project
-          cp -r "${{ env.UPLOAD_DIR_EN_US }}" wixtoolset-v5-project/en-us
-          cp -r "${{ env.UPLOAD_DIR_PT_BR }}" wixtoolset-v5-project/pt-br
+          rm -rf msi-wixtoolset-v5-project && mkdir -p msi-wixtoolset-v5-project
+          cp "${{ env.CONFIG_FILE }}" msi-wixtoolset-v5-project
+          cp -r "${{ env.UPLOAD_DIR_EN_US }}" msi-wixtoolset-v5-project/en-us
+          cp -r "${{ env.UPLOAD_DIR_PT_BR }}" msi-wixtoolset-v5-project/pt-br
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wixtoolset-v5-project
-          path: wixtoolset-v5-project
+          name: msi-wixtoolset-v5-project
+          path: msi-wixtoolset-v5-project
           retention-days: 1
           if-no-files-found: error

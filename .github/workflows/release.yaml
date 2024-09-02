@@ -52,9 +52,9 @@ jobs:
     uses: ./.github/workflows/llvm-flang-new-msvc-like.yaml
     needs: get-source-code
 
-  generate-project:
-    name: Generate WixToolset
-    uses: ./.github/workflows/generate-wixtoolset-v5-project.yaml
+  generate-msi-project:
+    name: Generate MSI Project
+    uses: ./.github/workflows/generate-msi-wixtoolset-v5-project.yaml
     needs:
       - get-source-code
       - build-mingw32
@@ -67,7 +67,7 @@ jobs:
     name: MSI for en-US
     uses: ./.github/workflows/msi.yaml
     needs:
-      - generate-project
+      - generate-msi-project
     with:
       culture: en-us
 
@@ -75,7 +75,7 @@ jobs:
     name: MSI for pt-BR
     uses: ./.github/workflows/msi.yaml
     needs:
-      - generate-project
+      - generate-msi-project
     with:
       culture: pt-br
 

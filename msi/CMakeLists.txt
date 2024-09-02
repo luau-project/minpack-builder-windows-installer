@@ -7,6 +7,8 @@ if (NOT DEFINED PROJECT_SETTINGS)
     message(FATAL_ERROR "Parameter \"PROJECT_SETTINGS\" not defined. You must supply a json configuration file as cmake parameter: \"-DPROJECT_SETTINGS=path/to/config.json\".")
 endif()
 
+set(PROJECT_SETTINGS "${CMAKE_CURRENT_SOURCE_DIR}/project-settings.json" CACHE PATH "Path to the JSON configuration file.")
+
 if (NOT DEFINED MINPACK_BUILDER_VERSION)
     message(FATAL_ERROR "Parameter \"MINPACK_BUILDER_VERSION\" not defined. You must supply the version of Minpack Builder as cmake parameter: \"-DMINPACK_BUILDER_VERSION=X.Y.Z\" where X, Y and Z are numbers on range 0 - 255.")
 endif()
@@ -37,15 +39,15 @@ string(TOLOWER "${INSTALLER_CULTURE}" __culture_lower)
 
 set(WIXTOOLSET_MSI_NAME_WE "${PROJECT_NAME}-${PROJECT_VERSION}-${__culture_lower}")
 set(WIXTOOLSET_MSI_NAME "${WIXTOOLSET_MSI_NAME_WE}.msi")
-set(WIXTOOLSET_PROJECT_DIR "${CMAKE_BINARY_DIR}/wixtoolset-v5")
-set(WIXTOOLSET_PROJECT_INCLUDE_FILE_NAME "MinpackBuilder.wxi")
-set(WIXTOOLSET_PROJECT_MAIN_FILE_NAME "MinpackBuilder.wxs")
-set(WIXTOOLSET_PROJECT_VERSION_FILE_NAME "installer-version.txt")
-set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_REPOSITORY_URL "https://github.com/luau-project/minpack-builder")
-set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME "MinpackBuilderDialog.wxs")
-set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME "MinpackBuilderCustomizeDialog.wxs")
-set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_LICENSE_RTF_FILE_NAME "LICENSE.rtf")
-set(WIXTOOLSET_PROJECT_MINPACK_BUILDER_LICENSE_PDF_FILE_NAME "LICENSE.pdf")
+set(WIXTOOLSET_MSI_PROJECT_DIR "${CMAKE_CURRENT_BINARY_DIR}/msi-wixtoolset-v5")
+set(WIXTOOLSET_MSI_PROJECT_INCLUDE_FILE_NAME "MinpackBuilder.wxi")
+set(WIXTOOLSET_MSI_PROJECT_MAIN_FILE_NAME "MinpackBuilder.wxs")
+set(WIXTOOLSET_MSI_PROJECT_VERSION_FILE_NAME "installer-version.txt")
+set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL "https://github.com/luau-project/minpack-builder")
+set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME "MinpackBuilderDialog.wxs")
+set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME "MinpackBuilderCustomizeDialog.wxs")
+set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_LICENSE_RTF_FILE_NAME "LICENSE.rtf")
+set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_LICENSE_PDF_FILE_NAME "LICENSE.pdf")
 
 include(cmake/Utilities.cmake)
 include(cmake/GenerateProjectConfigWxi.cmake)
@@ -92,13 +94,13 @@ end_project_config_wxi()
 file(COPY
     "localization/WixUI_${__culture_lower}.wxl"
     DESTINATION
-    "${WIXTOOLSET_PROJECT_DIR}")
+    "${WIXTOOLSET_MSI_PROJECT_DIR}")
 
 write_minpack_builder_customize_dialog_wxs("${compiler_ids}")
 
 configure_file(
     templates/MinpackBuilderDialog.wxs.in
-    "${WIXTOOLSET_PROJECT_DIR}/${WIXTOOLSET_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME}"
+    "${WIXTOOLSET_MSI_PROJECT_DIR}/${WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME}"
     NEWLINE_STYLE WIN32)
 
 write_minpack_builder_main_file_wxs("${compiler_ids}")
@@ -110,12 +112,12 @@ set(__wix_build_cmd
     "wix" "build" "-nologo" "-arch" "x64" "-ext" "WixToolset.UI.wixext")
 
 file(GLOB __wix_source_files
-    RELATIVE "${WIXTOOLSET_PROJECT_DIR}"
-    "${WIXTOOLSET_PROJECT_DIR}/*.wxs")
+    RELATIVE "${WIXTOOLSET_MSI_PROJECT_DIR}"
+    "${WIXTOOLSET_MSI_PROJECT_DIR}/*.wxs")
 
 file(GLOB __wix_localization_files
-    RELATIVE "${WIXTOOLSET_PROJECT_DIR}"
-    "${WIXTOOLSET_PROJECT_DIR}/*.wxl")
+    RELATIVE "${WIXTOOLSET_MSI_PROJECT_DIR}"
+    "${WIXTOOLSET_MSI_PROJECT_DIR}/*.wxl")
 
 foreach(wix_wxs "${__wix_source_files}")
     list(APPEND __wix_build_cmd ${wix_wxs})
@@ -130,15 +132,15 @@ list(APPEND __wix_build_cmd "${WIXTOOLSET_MSI_NAME}")
 
 list(JOIN __wix_build_cmd " " __wix_build_cmd)
 
-file(WRITE "${WIXTOOLSET_PROJECT_DIR}/msi.bat" "${__wix_build_cmd}")
+file(WRITE "${WIXTOOLSET_MSI_PROJECT_DIR}/msi.bat" "${__wix_build_cmd}")
 
 # Creating archives (.zip and .tar.gz) for the generated WixToolset project.
 # Also, storing hashes (SHA256 and MD5) for such archives.
-set(__archives_dir "${CMAKE_BINARY_DIR}/archives-wixtoolset")
+set(__archives_dir "${CMAKE_CURRENT_BINARY_DIR}/msi-archives-wixtoolset")
 
 file(MAKE_DIRECTORY "${__archives_dir}")
 
-set(__installer_version_filename "${__archives_dir}/${WIXTOOLSET_PROJECT_VERSION_FILE_NAME}")
+set(__installer_version_filename "${__archives_dir}/${WIXTOOLSET_MSI_PROJECT_VERSION_FILE_NAME}")
 file(WRITE ${__installer_version_filename} "${PROJECT_VERSION}")
 
 set(__archive_filepath_base "${__archives_dir}/${WIXTOOLSET_MSI_NAME_WE}")
@@ -147,15 +149,15 @@ set(__targz_archive_filename "${__archive_filepath_base}.tar.gz")
 
 # .zip archive
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar c "${__zip_archive_filename}" --format=zip -- "${WIXTOOLSET_PROJECT_DIR}"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E tar c "${__zip_archive_filename}" --format=zip -- "${WIXTOOLSET_MSI_PROJECT_DIR}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     RESULT_VARIABLE zip_archive_res
 )
 
 # .tar.gz archive
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar cz "${__targz_archive_filename}" --format=gnutar -- "${WIXTOOLSET_PROJECT_DIR}"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E tar cz "${__targz_archive_filename}" --format=gnutar -- "${WIXTOOLSET_MSI_PROJECT_DIR}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     RESULT_VARIABLE targz_archive_res
 )
 

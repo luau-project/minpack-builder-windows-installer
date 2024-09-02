@@ -1,5 +1,5 @@
 function(begin_project_config_wxi)
-    set(__target_dir "${WIXTOOLSET_PROJECT_DIR}")
+    set(__target_dir "${WIXTOOLSET_MSI_PROJECT_DIR}")
 
     if (IS_DIRECTORY ${__target_dir})
         file(REMOVE_RECURSE ${__target_dir})
@@ -7,7 +7,7 @@ function(begin_project_config_wxi)
 
     file(MAKE_DIRECTORY ${__target_dir})
 
-    set(__target_file "${__target_dir}/${WIXTOOLSET_PROJECT_INCLUDE_FILE_NAME}")
+    set(__target_file "${__target_dir}/${WIXTOOLSET_MSI_PROJECT_INCLUDE_FILE_NAME}")
 
     if (EXISTS ${__target_file})
         file(REMOVE ${__target_file})
@@ -18,8 +18,8 @@ function(begin_project_config_wxi)
 endfunction()
 
 function(append_lines_on_project_config_wxi lines)
-    set(__target_dir "${WIXTOOLSET_PROJECT_DIR}")
-    set(__target_file "${__target_dir}/${WIXTOOLSET_PROJECT_INCLUDE_FILE_NAME}")
+    set(__target_dir "${WIXTOOLSET_MSI_PROJECT_DIR}")
+    set(__target_file "${__target_dir}/${WIXTOOLSET_MSI_PROJECT_INCLUDE_FILE_NAME}")
 
     if (NOT EXISTS ${__target_file})
         message(FATAL_ERROR "File \"${__target_file}\" not found")

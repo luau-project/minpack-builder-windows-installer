@@ -77,13 +77,13 @@ Required CMake parameters:
 | ```MINPACK_BUILDER_SOURCES``` | PATH | Path to the directory containing Minpack Builder source code (e.g.: the path on disk to the extracted directory of [https://github.com/luau-project/minpack-builder/archive/refs/tags/1.1.0.zip](https://github.com/luau-project/minpack-builder/archive/refs/tags/1.1.0.zip)). |
 | ```MINPACK_BUILDER_VERSION``` | STRING | Version of Minpack Builder (e.g.: 1.1.0). |
 
-In a command prompt (or terminal) in the project directory containing [CMakeLists.txt](../CMakeLists.txt), a valid configuration would be
+In a command prompt (or terminal) in the project directory ```minpack-builder-windows-installer```, a valid configuration would be
 
 ```bash
-cmake -DPROJECT_SETTINGS=path/to/settings.json -DGFortranUCRTSixFour_BINARIES_DIR=path/to/gfortran/binaries -DLLVMFlangNewMsvcLike_BINARIES_DIR=path/to/llvm-flang-msvc-like/binaries -DMINPACK_SOURCES=path/to/minpack/source-code -DMINPACK_BUILDER_SOURCES=path/to/minpack-builder/source-code -DMINPACK_BUILDER_VERSION=1.1.0 -S . -B build
+cmake -DPROJECT_SETTINGS=path/to/settings.json -DGFortranUCRTSixFour_BINARIES_DIR=path/to/gfortran/binaries -DLLVMFlangNewMsvcLike_BINARIES_DIR=path/to/llvm-flang-msvc-like/binaries -DMINPACK_SOURCES=path/to/minpack/source-code -DMINPACK_BUILDER_SOURCES=path/to/minpack-builder/source-code -DMINPACK_BUILDER_VERSION=1.1.0 -S msi -B build
 ```
 
-If the command succeed, the source files for the ```WiX Toolset``` project will be stored at ```build/wixtoolset-v5```.
+If the command succeed, the source files for the ```WiX Toolset``` project will be stored at ```build/msi-wixtoolset-v5```.
 
 [Back to ToC](#table-of-contents)
 
@@ -117,14 +117,14 @@ wix extension add -g WixToolset.UI.wixext/5.0.1
 ## Building the MSI installer
 
 Congratulations if you got this far, because:
-* you were able to generate the ```WiX Toolset``` project, which is assumed to be stored at ```build/wixtoolset-v5```;
+* you were able to generate the ```WiX Toolset``` project, which is assumed to be stored at ```build/msi-wixtoolset-v5```;
 * you managed to meet the requirements to build the MSI installer;
 * you are ready to build the MSI installer.
 
-Then, using a command prompt on a Windows machine, you can now change directory to ```build/wixtoolset-v5``` and execute the file ```msi.bat```, which builds the MSI package.
+Then, using a command prompt on a Windows machine, you can now change directory to ```build/msi-wixtoolset-v5``` and execute the file ```msi.bat```, which builds the MSI package.
 
 ```cmd
-cd build\wixtoolset-v5 && msi.bat
+cd build\msi-wixtoolset-v5 && msi.bat
 ```
 
 [Back to ToC](#table-of-contents)

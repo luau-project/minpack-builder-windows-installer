@@ -107,7 +107,7 @@ function(__write_installed_compiler_config_wxi compiler_ids)
 
             configure_file(
                 templates/ListOfInstalledCompilersOnWindowsRegistry.wxs.in
-                "${WIXTOOLSET_PROJECT_DIR}/${c_id_other}InstalledCompilerOn${compiler_id}Selection.wxs"
+                "${WIXTOOLSET_MSI_PROJECT_DIR}/${c_id_other}InstalledCompilerOn${compiler_id}Selection.wxs"
                 @ONLY
                 NEWLINE_STYLE WIN32)
 
@@ -192,14 +192,14 @@ function(parse_compiler_settings_from_json json_file compiler_ids)
 
         configure_file(
             templates/CompilerChoiceProperty.wxs.in
-            "${WIXTOOLSET_PROJECT_DIR}/${compiler_id}ChoiceProperty.wxs"
+            "${WIXTOOLSET_MSI_PROJECT_DIR}/${compiler_id}ChoiceProperty.wxs"
             @ONLY
             NEWLINE_STYLE WIN32)
 
         if ("${_index}" STREQUAL "0")
             configure_file(
                 templates/ActiveCompilerChoiceProperty.wxs.in
-                "${WIXTOOLSET_PROJECT_DIR}/ActiveCompilerChoiceProperty.wxs"
+                "${WIXTOOLSET_MSI_PROJECT_DIR}/ActiveCompilerChoiceProperty.wxs"
                 @ONLY
                 NEWLINE_STYLE WIN32)
         endif()

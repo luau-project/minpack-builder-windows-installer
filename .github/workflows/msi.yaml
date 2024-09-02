@@ -10,7 +10,7 @@ on:
 jobs:
 
   msi:
-    name: MSI in the culture ${{ inputs.culture }}
+    name: Build MSI ${{ inputs.culture }}
     runs-on: windows-latest
 
     steps:
@@ -18,8 +18,8 @@ jobs:
       - name: Download WixToolset project
         uses: actions/download-artifact@v4
         with:
-          name: wixtoolset-v5-project
-          path: wixtoolset-v5-project
+          name: msi-wixtoolset-v5-project
+          path: msi-wixtoolset-v5-project
       
       - name: Validate culture input
         run: |
@@ -37,7 +37,7 @@ jobs:
 
       - name: Set environment variable for the installer version
         run: |
-          $archives_dir = Join-Path "${{ github.workspace }}" -ChildPath "wixtoolset-v5-project";
+          $archives_dir = Join-Path "${{ github.workspace }}" -ChildPath "msi-wixtoolset-v5-project";
           $archives_culture_dir = Join-Path $archives_dir -ChildPath "${{ env.SAFE_CULTURE }}";
 
           $installer_version = Get-Content (Join-Path $archives_culture_dir -ChildPath "installer-version.txt");
@@ -77,7 +77,7 @@ jobs:
 
           Expand-Archive $archive -Destination $archive_temp_dir;
 
-          $archive_msi_dir = Join-Path $archive_temp_dir -ChildPath "wixtoolset-v5";
+          $archive_msi_dir = Join-Path $archive_temp_dir -ChildPath "msi-wixtoolset-v5";
 
           Add-Content "${{ github.env }}" "MSI_DIR=${archive_msi_dir}";
       
@@ -104,7 +104,7 @@ jobs:
           Set-Content -Path (Join-Path distribution -ChildPath "culture.txt") -Value "${{ env.SAFE_CULTURE }}" -NoNewline;
           Set-Content -Path (Join-Path distribution -ChildPath "installer-version.txt") -Value "${{ env.INSTALLER_VERSION }}" -NoNewline;
           
-          Copy-Item (Join-Path wixtoolset-v5-project -ChildPath "project-settings.json") distribution
+          Copy-Item (Join-Path msi-wixtoolset-v5-project -ChildPath "project-settings.json") distribution
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
