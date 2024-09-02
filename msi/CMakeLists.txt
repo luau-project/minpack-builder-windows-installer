@@ -40,9 +40,12 @@ string(TOLOWER "${INSTALLER_CULTURE}" __culture_lower)
 set(WIXTOOLSET_MSI_NAME_WE "${PROJECT_NAME}-${PROJECT_VERSION}-${__culture_lower}")
 set(WIXTOOLSET_MSI_NAME "${WIXTOOLSET_MSI_NAME_WE}.msi")
 set(WIXTOOLSET_MSI_PROJECT_DIR "${CMAKE_CURRENT_BINARY_DIR}/msi-wixtoolset-v5")
+set(WIXTOOLSET_MSI_PROJECT_ARCHIVES_DIR "${CMAKE_CURRENT_BINARY_DIR}/msi-archives-wixtoolset")
 set(WIXTOOLSET_MSI_PROJECT_INCLUDE_FILE_NAME "MinpackBuilder.wxi")
 set(WIXTOOLSET_MSI_PROJECT_MAIN_FILE_NAME "MinpackBuilder.wxs")
 set(WIXTOOLSET_MSI_PROJECT_VERSION_FILE_NAME "msi-version.txt")
+set(WIXTOOLSET_BA_PROJECT_SETTINGS_FILE_NAME "bootstrapper-application-project-settings.json")
+set(WIXTOOLSET_MSI_PROJECT_BAT_FILE_NAME "msi.bat")
 set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_REPOSITORY_URL "https://github.com/luau-project/minpack-builder")
 set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_DIALOG_FILE_NAME "MinpackBuilderDialog.wxs")
 set(WIXTOOLSET_MSI_PROJECT_MINPACK_BUILDER_CUSTOMIZE_DIALOG_FILE_NAME "MinpackBuilderCustomizeDialog.wxs")
@@ -56,22 +59,38 @@ include(cmake/GenerateMinpackBuilderCustomizeDialogWxs.cmake)
 include(cmake/GenerateMinpackBuilderMainFile.cmake)
 
 include(cmake/HarvestDirectory.cmake)
+include(cmake/GenerateBootstrapperApplicationProjectSettings.cmake)
 include(cmake/ParseCompilerSettings.cmake)
+include(cmake/GenerateMsiBat.cmake)
+include(cmake/GenerateArchives.cmake)
 
 get_LCID_from_culture("${__culture_lower}" __MinpackBuilderLCID)
+get_guid(WIXTOOLSET_MSI_PROJECT_UPGRADE_CODE_RAW)
+
+set(WIXTOOLSET_MSI_PROJECT_UPGRADE_CODE "{${WIXTOOLSET_MSI_PROJECT_UPGRADE_CODE_RAW}}")
+set(WIXTOOLSET_MSI_PROJECT_MANUFACTURER "Luau Project")
+set(WIXTOOLSET_MSI_PROJECT_PRODUCT_NAME "Minpack Builder")
+set(WIXTOOLSET_MSI_PROJECT_LANGUAGE "${__MinpackBuilderLCID}")
+set(WIXTOOLSET_MSI_PROJECT_CULTURE "${__culture_lower}")
+set(WIXTOOLSET_MSI_PROJECT_VERSION "${PROJECT_VERSION}")
+set(WIXTOOLSET_MSI_PROJECT_PACKAGE_NAME "${WIXTOOLSET_MSI_PROJECT_PRODUCT_NAME} ${MINPACK_BUILDER_VERSION}")
+set(WIXTOOLSET_MSI_PROJECT_REGISTRY_ROOT "HKLM")
+set(WIXTOOLSET_MSI_PROJECT_REGISTRY_KEY "Software\\${WIXTOOLSET_MSI_PROJECT_MANUFACTURER}\\${WIXTOOLSET_MSI_PROJECT_PRODUCT_NAME}")
+set(WIXTOOLSET_MSI_PROJECT_ACTIVE_COMPILER_ID_REGISTRY_KEY "Software\\${WIXTOOLSET_MSI_PROJECT_MANUFACTURER}\\${WIXTOOLSET_MSI_PROJECT_PRODUCT_NAME}\\ActiveCompiler\\Id")
+set(WIXTOOLSET_MSI_PROJECT_ACTIVE_COMPILER_CHOICE_PROPERTY "ACTIVECOMPILER")
 
 begin_project_config_wxi()
 append_blank_line_on_project_config_wxi()
 append_comment_on_project_config_wxi("start of project settings")
-append_define_guid_on_project_config_wxi("UpgradeCode")
-append_define_on_project_config_wxi("Manufacturer" "Luau Project")
-append_define_on_project_config_wxi("ProductName" "Minpack Builder")
-append_define_on_project_config_wxi("MinpackBuilderLanguage" "${__MinpackBuilderLCID}")
+append_define_on_project_config_wxi("UpgradeCode" "${WIXTOOLSET_MSI_PROJECT_UPGRADE_CODE}")
+append_define_on_project_config_wxi("Manufacturer" "${WIXTOOLSET_MSI_PROJECT_MANUFACTURER}")
+append_define_on_project_config_wxi("ProductName" "${WIXTOOLSET_MSI_PROJECT_PRODUCT_NAME}")
+append_define_on_project_config_wxi("MinpackBuilderLanguage" "${WIXTOOLSET_MSI_PROJECT_LANGUAGE}")
 append_define_on_project_config_wxi("MinpackBuilderVersion" "${MINPACK_BUILDER_VERSION}")
-append_define_on_project_config_wxi("MinpackBuilderMsiVersion" "${PROJECT_VERSION}")
-append_define_on_project_config_wxi("PackageName" "\$(ProductName) \$(MinpackBuilderVersion)")
-append_define_on_project_config_wxi("MinpackBuilderRegistryRoot" "HKLM")
-append_define_on_project_config_wxi("MinpackBuilderRegistryKey" "Software\\\$(Manufacturer)\\\$(ProductName)")
+append_define_on_project_config_wxi("MinpackBuilderMsiVersion" "${WIXTOOLSET_MSI_PROJECT_VERSION}")
+append_define_on_project_config_wxi("PackageName" "${WIXTOOLSET_MSI_PROJECT_PACKAGE_NAME}")
+append_define_on_project_config_wxi("MinpackBuilderRegistryRoot" "${WIXTOOLSET_MSI_PROJECT_REGISTRY_ROOT}")
+append_define_on_project_config_wxi("MinpackBuilderRegistryKey" "${WIXTOOLSET_MSI_PROJECT_REGISTRY_KEY}")
 
 get_filename_component(__minpack_sources_dir_name "${MINPACK_SOURCES}" NAME)
 append_define_on_project_config_wxi("MinpackSourceCodeDirectory" "minpack-source-code\\${__minpack_sources_dir_name}")
@@ -84,15 +103,30 @@ append_define_on_project_config_wxi("LicensePDF" "LICENSE.pdf")
 
 append_define_on_project_config_wxi("ActiveCompilerRegistryKey" "\$(MinpackBuilderRegistryKey)\\ActiveCompiler")
 append_define_on_project_config_wxi("InstalledCompilersRegistryKey" "\$(MinpackBuilderRegistryKey)\\InstalledCompilers")
-append_define_on_project_config_wxi("ActiveCompilerChoiceProperty" "ACTIVECOMPILER")
+append_define_on_project_config_wxi("ActiveCompilerChoiceProperty" "${WIXTOOLSET_MSI_PROJECT_ACTIVE_COMPILER_CHOICE_PROPERTY}")
 append_comment_on_project_config_wxi("end of project settings")
 
-parse_compiler_settings_from_json("${PROJECT_SETTINGS}" compiler_ids)
+parse_compiler_settings_from_json("${PROJECT_SETTINGS}" compiler_ids ba_compilers_json)
 append_blank_line_on_project_config_wxi()
 end_project_config_wxi()
 
+write_ba_project_settings(
+    "${WIXTOOLSET_MSI_PROJECT_UPGRADE_CODE}"
+    "${WIXTOOLSET_MSI_PROJECT_MANUFACTURER}"
+    "${WIXTOOLSET_MSI_PROJECT_PRODUCT_NAME}"
+    "${WIXTOOLSET_MSI_PROJECT_LANGUAGE}"
+    "${WIXTOOLSET_MSI_PROJECT_CULTURE}"
+    "${WIXTOOLSET_MSI_PROJECT_VERSION}"
+    "${WIXTOOLSET_MSI_PROJECT_PACKAGE_NAME}"
+    "${WIXTOOLSET_MSI_PROJECT_REGISTRY_ROOT}"
+    "${WIXTOOLSET_MSI_PROJECT_REGISTRY_KEY}"
+    "${WIXTOOLSET_MSI_PROJECT_ACTIVE_COMPILER_ID_REGISTRY_KEY}"
+    "${WIXTOOLSET_MSI_PROJECT_ACTIVE_COMPILER_CHOICE_PROPERTY}"
+    "${ba_compilers_json}"
+)
+
 file(COPY
-    "localization/WixUI_${__culture_lower}.wxl"
+    "localization/WixUI_${WIXTOOLSET_MSI_PROJECT_CULTURE}.wxl"
     DESTINATION
     "${WIXTOOLSET_MSI_PROJECT_DIR}")
 
@@ -108,65 +142,8 @@ write_minpack_builder_main_file_wxs("${compiler_ids}")
 write_minpack_builder_license_rtf()
 write_minpack_builder_license_pdf()
 
-set(__wix_build_cmd
-    "wix" "build" "-nologo" "-arch" "x64" "-ext" "WixToolset.UI.wixext")
-
-file(GLOB __wix_source_files
-    RELATIVE "${WIXTOOLSET_MSI_PROJECT_DIR}"
-    "${WIXTOOLSET_MSI_PROJECT_DIR}/*.wxs")
-
-file(GLOB __wix_localization_files
-    RELATIVE "${WIXTOOLSET_MSI_PROJECT_DIR}"
-    "${WIXTOOLSET_MSI_PROJECT_DIR}/*.wxl")
-
-foreach(wix_wxs "${__wix_source_files}")
-    list(APPEND __wix_build_cmd ${wix_wxs})
-endforeach()
-
-foreach(wix_wxl "${__wix_localization_files}")
-    list(APPEND __wix_build_cmd ${wix_wxl})
-endforeach()
-
-list(APPEND __wix_build_cmd "-out")
-list(APPEND __wix_build_cmd "${WIXTOOLSET_MSI_NAME}")
-
-list(JOIN __wix_build_cmd " " __wix_build_cmd)
-
-file(WRITE "${WIXTOOLSET_MSI_PROJECT_DIR}/msi.bat" "${__wix_build_cmd}")
+write_msi_bat()
 
 # Creating archives (.zip and .tar.gz) for the generated WixToolset project.
-# Also, storing hashes (SHA256 and MD5) for such archives.
-set(__archives_dir "${CMAKE_CURRENT_BINARY_DIR}/msi-archives-wixtoolset")
-
-file(MAKE_DIRECTORY "${__archives_dir}")
-
-set(__installer_version_filename "${__archives_dir}/${WIXTOOLSET_MSI_PROJECT_VERSION_FILE_NAME}")
-file(WRITE ${__installer_version_filename} "${PROJECT_VERSION}")
-
-set(__archive_filepath_base "${__archives_dir}/${WIXTOOLSET_MSI_NAME_WE}")
-set(__zip_archive_filename "${__archive_filepath_base}.zip")
-set(__targz_archive_filename "${__archive_filepath_base}.tar.gz")
-
-# .zip archive
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar c "${__zip_archive_filename}" --format=zip -- "${WIXTOOLSET_MSI_PROJECT_DIR}"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-    RESULT_VARIABLE zip_archive_res
-)
-
-# .tar.gz archive
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar cz "${__targz_archive_filename}" --format=gnutar -- "${WIXTOOLSET_MSI_PROJECT_DIR}"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-    RESULT_VARIABLE targz_archive_res
-)
-
-set(__hashable_archives "${__zip_archive_filename}" "${__targz_archive_filename}" "${__installer_version_filename}")
-set(__hashes "SHA256" "MD5")
-
-foreach(__file_archive ${__hashable_archives})
-    foreach (__hash ${__hashes})
-        file(${__hash} ${__file_archive} __hash_value)
-        file(WRITE "${__file_archive}-${__hash}.txt" "${__hash_value}")
-    endforeach()
-endforeach()
+# Also, storing hashes (SHA256 and MD5) for the archives.
+write_archives()

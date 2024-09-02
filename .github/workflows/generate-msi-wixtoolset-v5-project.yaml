@@ -1,4 +1,4 @@
-name: Generate WixToolset
+name: MSI Project
 
 on: workflow_call
 
