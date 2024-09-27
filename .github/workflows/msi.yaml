@@ -105,6 +105,7 @@ jobs:
           Set-Content -Path (Join-Path distribution -ChildPath "msi-version.txt") -Value "${{ env.INSTALLER_VERSION }}" -NoNewline;
           
           Copy-Item (Join-Path msi-wixtoolset-v5-project -ChildPath "project-settings.json") distribution
+          Copy-Item (Join-Path "${{ env.MSI_DIR }}" -ChildPath "bootstrapper-application-project-settings.json") distribution
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
