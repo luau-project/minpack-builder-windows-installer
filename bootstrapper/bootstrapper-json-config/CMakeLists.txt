@@ -23,10 +23,10 @@ endif()
 
 set(bootstrapper_json_config_shared "${PROJECT_NAME}")
 set(bootstrapper_json_config_static "${PROJECT_NAME}-static")
-set(bootstrapper_json_config_PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/src/bootstrapper-json-config.h")
+set(bootstrapper_json_config_public_header "${CMAKE_CURRENT_SOURCE_DIR}/src/bootstrapper-json-config.h")
 set(bootstrapper_json_config_sources 
     "${CMAKE_CURRENT_SOURCE_DIR}/src/bootstrapper-json-config.c"
-    ${bootstrapper_json_config_PUBLIC_HEADER})
+    ${bootstrapper_json_config_public_header})
 
 set(bootstrapper_json_config_targets_to_install "")
 
@@ -37,7 +37,7 @@ if (BUILD_SHARED_LIBS)
     target_compile_definitions(${bootstrapper_json_config_shared} PRIVATE "BootstrapperJsonConfig_BUILDING")
     target_link_libraries(${bootstrapper_json_config_shared} PRIVATE ${JSON_TARGET_LIB})
 	set_target_properties(${bootstrapper_json_config_shared} PROPERTIES
-		PUBLIC_HEADER ${bootstrapper_json_config_PUBLIC_HEADER})
+		PUBLIC_HEADER ${bootstrapper_json_config_public_header})
 
 	list(APPEND bootstrapper_json_config_targets_to_install ${bootstrapper_json_config_shared})
 endif()
@@ -49,7 +49,7 @@ if (BUILD_STATIC_LIBS)
     target_compile_definitions(${bootstrapper_json_config_static} PRIVATE "BootstrapperJsonConfig_STATIC")
     target_link_libraries(${bootstrapper_json_config_static} PRIVATE ${JSON_TARGET_LIB})
 	set_target_properties(${bootstrapper_json_config_static} PROPERTIES
-		PUBLIC_HEADER ${bootstrapper_json_config_PUBLIC_HEADER})
+		PUBLIC_HEADER ${bootstrapper_json_config_public_header})
 
 	list(APPEND bootstrapper_json_config_targets_to_install ${bootstrapper_json_config_static})
 endif()

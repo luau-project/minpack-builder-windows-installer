@@ -423,7 +423,7 @@ MsiConfig bjc_new_msi_config(
     
     if (hResInfo == NULL)
     {
-        return NULL;
+        return (MsiConfig)NULL;
     }
 
     DWORD size = SizeofResource(hModule, hResInfo);
@@ -431,7 +431,7 @@ MsiConfig bjc_new_msi_config(
     if (size == 0)
     {
         CloseHandle(hResInfo);
-        return NULL;
+        return (MsiConfig)NULL;
     }
 
     HGLOBAL resource = LoadResource(hModule, hResInfo);
@@ -439,7 +439,7 @@ MsiConfig bjc_new_msi_config(
     if (resource == NULL)
     {
         CloseHandle(hResInfo);
-        return NULL;
+        return (MsiConfig)NULL;
     }
 
     LPVOID data = LockResource(resource);
@@ -448,7 +448,7 @@ MsiConfig bjc_new_msi_config(
     {
         FreeResource(resource);
         CloseHandle(hResInfo);
-        return NULL;
+        return (MsiConfig)NULL;
     }
 
     char *json_str = (char *)(malloc(size + 1));
@@ -456,7 +456,7 @@ MsiConfig bjc_new_msi_config(
     {
         FreeResource(resource);
         CloseHandle(hResInfo);
-        return NULL;
+        return (MsiConfig)NULL;
     }
 
     memcpy(json_str, (LPCVOID)data, size);
@@ -472,7 +472,7 @@ MsiConfig bjc_new_msi_config(
 
     if (root == NULL)
     {
-        return NULL;
+        return (MsiConfig)NULL;
     }
     
     MsiConfig__ *config = (MsiConfig__ *)(malloc(sizeof(MsiConfig__)));
@@ -480,18 +480,18 @@ MsiConfig bjc_new_msi_config(
     if (config == NULL)
     {
         json_object_put(root);
-        return NULL;
+        return (MsiConfig)NULL;
     }
 
     if (!parse_msi_config(root, config))
     {
         free((void *)config);
-        config = NULL;
+        config = (MsiConfig)NULL;
     }
     
     json_object_put(root);
 
-    return config;
+    return (MsiConfig)config;
 }
 
 BootstrapperJsonConfig_API

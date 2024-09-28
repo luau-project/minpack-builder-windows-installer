@@ -7,20 +7,26 @@ extern "C" {
 
 #include <windows.h>
 
-#ifdef BootstrapperJsonConfig_STATIC
-    #define BootstrapperJsonConfig_API
-#else
-    #ifdef BootstrapperJsonConfig_BUILDING
-        #if defined(__GNUC__) || defined(__CYGWIN__) || defined(__MINGW32__)
-            #define BootstrapperJsonConfig_API __attribute__((dllexport))
-        #elif defined(_MSC_VER)
-            #define BootstrapperJsonConfig_API __declspec(dllexport)
-        #endif
+#ifndef BootstrapperJsonConfig_API
+    #ifdef BootstrapperJsonConfig_STATIC
+        #define BootstrapperJsonConfig_API
     #else
-        #if defined(__GNUC__) || defined(__CYGWIN__) || defined(__MINGW32__)
-            #define BootstrapperJsonConfig_API __attribute__((dllimport))
-        #elif defined(_MSC_VER)
-            #define BootstrapperJsonConfig_API __declspec(dllimport)
+        #ifdef BootstrapperJsonConfig_BUILDING
+            #if defined(__GNUC__) || defined(__CYGWIN__) || defined(__MINGW32__)
+                #define BootstrapperJsonConfig_API __attribute__((dllexport))
+            #elif defined(_MSC_VER)
+                #define BootstrapperJsonConfig_API __declspec(dllexport)
+            #else
+                #define BootstrapperJsonConfig_API __attribute__ ((visibility ("default")))
+            #endif
+        #else
+            #if defined(__GNUC__) || defined(__CYGWIN__) || defined(__MINGW32__)
+                #define BootstrapperJsonConfig_API __attribute__((dllimport))
+            #elif defined(_MSC_VER)
+                #define BootstrapperJsonConfig_API __declspec(dllimport)
+            #else
+                #define BootstrapperJsonConfig_API __attribute__ ((visibility ("default")))
+            #endif
         #endif
     #endif
 #endif
