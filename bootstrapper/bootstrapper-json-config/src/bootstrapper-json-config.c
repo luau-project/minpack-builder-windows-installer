@@ -485,9 +485,11 @@ MsiConfig bjc_new_msi_config(
 
     if (!parse_msi_config(root, config))
     {
-        json_object_put(root);
         free((void *)config);
+        config = NULL;
     }
+    
+    json_object_put(root);
 
     return config;
 }
