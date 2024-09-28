@@ -1,0 +1,56 @@
+get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_prefix "${_dir}/../.." ABSOLUTE)
+
+find_library(
+    @PROJECT_NAME@_SHARED_LIBRARY
+    NAMES "@PROJECT_NAME@"
+    HINTS "${_prefix}/@CMAKE_INSTALL_LIBDIR@"
+    NO_DEFAULT_PATH
+)
+
+find_library(
+    @PROJECT_NAME@_STATIC_LIBRARY
+    NAMES "@PROJECT_NAME@-static"
+    HINTS "${_prefix}/@CMAKE_INSTALL_LIBDIR@"
+    NO_DEFAULT_PATH
+)
+
+find_path(
+    @PROJECT_NAME@_INCLUDE_DIR
+    NAMES "bootstrapper-json-config.h"
+    HINTS "${_prefix}/@CMAKE_INSTALL_INCLUDEDIR@/@PROJECT_NAME@"
+    NO_DEFAULT_PATH
+)
+
+find_package(json-c CONFIG QUIET)
+
+mark_as_advanced(@PROJECT_NAME@_SHARED_LIBRARY)
+mark_as_advanced(@PROJECT_NAME@_STATIC_LIBRARY)
+
+if (DEFINED @PROJECT_NAME@_INCLUDE_DIR AND TARGET "@JSON_TARGET_LIB@" AND (DEFINED @PROJECT_NAME@_SHARED_LIBRARY OR DEFINED @PROJECT_NAME@_STATIC_LIBRARY))
+    get_filename_component(@PROJECT_NAME@_INCLUDE_DIR "${@PROJECT_NAME@_INCLUDE_DIR}" PATH)
+    
+    if (DEFINED @PROJECT_NAME@_SHARED_LIBRARY)
+        set(@PROJECT_NAME@_SHARED_COMPILE_DEFINITIONS "")
+
+        set(@PROJECT_NAME@_SHARED_LIBRARIES "${@PROJECT_NAME@_SHARED_LIBRARY}" "@JSON_TARGET_LIB@")
+    endif()
+
+    if (DEFINED @PROJECT_NAME@_STATIC_LIBRARY)
+        set(@PROJECT_NAME@_STATIC_COMPILE_DEFINITIONS "@PROJECT_NAME@_STATIC")
+
+        set(@PROJECT_NAME@_STATIC_LIBRARIES "${@PROJECT_NAME@_STATIC_LIBRARY}" "@JSON_TARGET_LIB@")
+    endif()
+    
+    set(@PROJECT_NAME@_FOUND ON)
+    set(@PROJECT_NAME@_ROOT_DIR "${_prefix}")
+    set(@PROJECT_NAME@_INSTALL_PREFIX "${_prefix}")
+    set(@PROJECT_NAME@_VERSION "@PROJECT_VERSION@")
+    
+    if (EXISTS "${_prefix}/@CMAKE_INSTALL_LIBDIR@/@PROJECT_NAME@-@PROJECT_VERSION@/@PROJECT_NAME@-targets.cmake")
+        include("${_prefix}/@CMAKE_INSTALL_LIBDIR@/@PROJECT_NAME@-@PROJECT_VERSION@/@PROJECT_NAME@-targets.cmake")
+    endif()
+endif()
+
+unset(_dir)
+unset(_prefix)
