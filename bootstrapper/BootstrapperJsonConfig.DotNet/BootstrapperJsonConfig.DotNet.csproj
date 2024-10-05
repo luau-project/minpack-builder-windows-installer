@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net45;net451;net452;net461;net462</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(GCC_LIKE)' == 'true' ">
+    <DefineConstants>GCC_LIKE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content
+      Condition=" Exists('$(BootstrapperJsonConfig_DLL)') "
+      Include="$(BootstrapperJsonConfig_DLL)"
+      CopyToOutputDirectory="Always"/>
+    
+    <Content
+      Condition=" Exists('$(JsonC_DLL)') "
+      Include="$(JsonC_DLL)"
+      CopyToOutputDirectory="Always"/>
+  </ItemGroup>
+
+</Project>

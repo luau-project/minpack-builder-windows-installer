@@ -34,7 +34,13 @@ extern "C" {
 typedef void *MsiConfig;
 
 BootstrapperJsonConfig_API
-MsiConfig bjc_new_msi_config(
+MsiConfig bjc_new_msi_config_from_data(
+    const char *data,
+    int length
+);
+
+BootstrapperJsonConfig_API
+MsiConfig bjc_new_msi_config_from_win32resource(
     HMODULE hModule,
     LPCWSTR lpName,
     LPCWSTR lpType
@@ -77,10 +83,10 @@ BootstrapperJsonConfig_API
 LPCWSTR bjc_get_version_registry_key(MsiConfig config);
 
 BootstrapperJsonConfig_API
-LPCWSTR bjc_get_activate_compiler_choice_property(MsiConfig config);
+LPCWSTR bjc_get_active_compiler_choice_property(MsiConfig config);
 
 BootstrapperJsonConfig_API
-LPCWSTR bjc_get_activate_compiler_id_registry_key(MsiConfig config);
+LPCWSTR bjc_get_active_compiler_id_registry_key(MsiConfig config);
 
 /* start of compiler-related */
 

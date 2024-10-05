@@ -1,0 +1,4 @@
+
+#define BJCR_NAMEID 100
+#define BJCR_TYPEID 257
+

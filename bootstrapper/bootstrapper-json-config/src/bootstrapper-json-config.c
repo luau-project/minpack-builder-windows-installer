@@ -410,7 +410,59 @@ static BOOL parse_msi_config(json_object *root, MsiConfig__ *config)
 }
 
 BootstrapperJsonConfig_API
-MsiConfig bjc_new_msi_config(
+MsiConfig bjc_new_msi_config_from_data(
+    const char *data,
+    int length
+)
+{
+    if (data == NULL)
+    {
+        return (MsiConfig)NULL;
+    }
+
+    if (length <= 0)
+    {
+        return (MsiConfig)NULL;
+    }
+    
+    json_tokener *tok = json_tokener_new();
+
+    if (tok == NULL)
+    {
+        return (MsiConfig)NULL;
+    }
+
+    json_object *root = json_tokener_parse_ex(tok, data, length);
+    
+    if (root == NULL)
+    {
+        json_tokener_free(tok);
+        return (MsiConfig)NULL;
+    }
+    
+    MsiConfig__ *config = (MsiConfig__ *)(malloc(sizeof(MsiConfig__)));
+
+    if (config == NULL)
+    {
+        json_object_put(root);
+        json_tokener_free(tok);
+        return (MsiConfig)NULL;
+    }
+
+    if (!parse_msi_config(root, config))
+    {
+        free((void *)config);
+        config = (MsiConfig)NULL;
+    }
+    
+    json_object_put(root);
+    json_tokener_free(tok);
+
+    return (MsiConfig)config;
+}
+
+BootstrapperJsonConfig_API
+MsiConfig bjc_new_msi_config_from_win32resource(
     HMODULE hModule,
     LPCWSTR lpName,
     LPCWSTR lpType
@@ -451,47 +503,12 @@ MsiConfig bjc_new_msi_config(
         return (MsiConfig)NULL;
     }
 
-    char *json_str = (char *)(malloc(size + 1));
-    if (json_str == NULL)
-    {
-        FreeResource(resource);
-        CloseHandle(hResInfo);
-        return (MsiConfig)NULL;
-    }
-
-    memcpy(json_str, (LPCVOID)data, size);
+    MsiConfig config = bjc_new_msi_config_from_data((const char *)data, (int)size);
 
     FreeResource(resource);
     CloseHandle(hResInfo);
 
-    json_str[size] = '\0';
-
-    json_object *root = json_tokener_parse(json_str);
-    
-    free((void *)json_str);
-
-    if (root == NULL)
-    {
-        return (MsiConfig)NULL;
-    }
-    
-    MsiConfig__ *config = (MsiConfig__ *)(malloc(sizeof(MsiConfig__)));
-
-    if (config == NULL)
-    {
-        json_object_put(root);
-        return (MsiConfig)NULL;
-    }
-
-    if (!parse_msi_config(root, config))
-    {
-        free((void *)config);
-        config = (MsiConfig)NULL;
-    }
-    
-    json_object_put(root);
-
-    return (MsiConfig)config;
+    return config;
 }
 
 BootstrapperJsonConfig_API
@@ -597,7 +614,7 @@ LPCWSTR bjc_get_version_registry_key(MsiConfig config)
 }
 
 BootstrapperJsonConfig_API
-LPCWSTR bjc_get_activate_compiler_choice_property(MsiConfig config)
+LPCWSTR bjc_get_active_compiler_choice_property(MsiConfig config)
 {
     MsiConfig__ *config__ = (MsiConfig__ *)config;
     return (config__ == NULL || config__->compilers.data == NULL) ?
@@ -605,7 +622,7 @@ LPCWSTR bjc_get_activate_compiler_choice_property(MsiConfig config)
 }
 
 BootstrapperJsonConfig_API
-LPCWSTR bjc_get_activate_compiler_id_registry_key(MsiConfig config)
+LPCWSTR bjc_get_active_compiler_id_registry_key(MsiConfig config)
 {
     MsiConfig__ *config__ = (MsiConfig__ *)config;
     return (config__ == NULL || config__->compilers.data == NULL) ?
