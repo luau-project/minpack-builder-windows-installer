@@ -5,7 +5,7 @@ namespace BootstrapperJsonConfigResource.DotNet
 {
 	internal static class NativeMethods
 	{
-        public const string BootstrapperJsonConfigResource_DLL = "BootstrapperJsonConfigResource.dll";
+		public const string BootstrapperJsonConfigResource_DLL = "BootstrapperJsonConfigResource.dll";
         
 		[DllImport("kernel32.dll")]
 		public static extern IntPtr LoadLibraryW([In] [MarshalAs(UnmanagedType.LPWStr)] string name);

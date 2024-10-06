@@ -5,17 +5,19 @@ namespace BootstrapperJsonConfig.DotNet
 {
 	internal static class NativeMethods
 	{
-        #if GCC_LIKE
-        private const string BootstrapperJsonConfig_DLL = "libBootstrapperJsonConfig.dll";
-        #else
-        private const string BootstrapperJsonConfig_DLL = "BootstrapperJsonConfig.dll";
-        #endif
+		#if GCC_LIKE
+		private const string BootstrapperJsonConfig_DLL = "libBootstrapperJsonConfig.dll";
+		#else
+		private const string BootstrapperJsonConfig_DLL = "BootstrapperJsonConfig.dll";
+		#endif
 
 		[DllImport(BootstrapperJsonConfig_DLL, CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr bjc_new_msi_config_from_win32resource(
 			[In] IntPtr hModule,
+
 			[MarshalAs(UnmanagedType.LPWStr)]
 			[In] string lpNameId,
+			
 			[MarshalAs(UnmanagedType.LPWStr)]
 			[In] string lpTypeId
 		);
@@ -112,48 +114,48 @@ namespace BootstrapperJsonConfig.DotNet
 		[return: MarshalAs(UnmanagedType.LPWStr)]
 		public static extern string bjc_get_compiler_id(
 			[In] IntPtr msiConfig,
-            [In] int i
+			[In] int i
 		);
 		
 		[DllImport(BootstrapperJsonConfig_DLL, CallingConvention = CallingConvention.Cdecl)]
 		[return: MarshalAs(UnmanagedType.LPWStr)]
 		public static extern string bjc_get_compiler_name(
 			[In] IntPtr msiConfig,
-            [In] int i
+			[In] int i
 		);
 		
 		[DllImport(BootstrapperJsonConfig_DLL, CallingConvention = CallingConvention.Cdecl)]
 		[return: MarshalAs(UnmanagedType.LPWStr)]
 		public static extern string bjc_get_compiler_version(
 			[In] IntPtr msiConfig,
-            [In] int i
+			[In] int i
 		);
 		
 		[DllImport(BootstrapperJsonConfig_DLL, CallingConvention = CallingConvention.Cdecl)]
 		[return: MarshalAs(UnmanagedType.LPWStr)]
 		public static extern string bjc_get_compiler_host_arch(
 			[In] IntPtr msiConfig,
-            [In] int i
+			[In] int i
 		);
 		
 		[DllImport(BootstrapperJsonConfig_DLL, CallingConvention = CallingConvention.Cdecl)]
 		[return: MarshalAs(UnmanagedType.LPWStr)]
 		public static extern string bjc_get_compiler_display_text(
 			[In] IntPtr msiConfig,
-            [In] int i
+			[In] int i
 		);
 		
 		[DllImport(BootstrapperJsonConfig_DLL, CallingConvention = CallingConvention.Cdecl)]
 		[return: MarshalAs(UnmanagedType.LPWStr)]
 		public static extern string bjc_get_compiler_features_to_remove(
 			[In] IntPtr msiConfig,
-            [In] int i
+			[In] int i
 		);
 		
 		[DllImport(BootstrapperJsonConfig_DLL, CallingConvention = CallingConvention.Cdecl)]
 		public static extern int bjc_get_compiler_index(
 			[In] IntPtr msiConfig,
-            [In] int i
+			[In] int i
 		);
 	}
 }

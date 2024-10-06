@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45;net451;net452;net461;net462</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net45;net451;net452;net46;net461;net462;net47;net471;net472;net48;net481;net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(GCC_LIKE)' == 'true' ">
