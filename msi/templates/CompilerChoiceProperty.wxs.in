@@ -4,21 +4,8 @@
     <!-- Load project definitions -->
     <?include MinpackBuilder.wxi?>
 
-    <!-- This fragment implements a modified version -->
-    <!-- of the remember property pattern -->
-    <!-- for @compiler_id@ -->
     <Fragment>
 
-        <!-- Define the property -->
-        <Property Id="$(@compiler_id@ChoiceProperty)" Secure="yes" Value="$(@compiler_id@ChoicePropertyDefaultValue)">
-            <RegistrySearch
-                Id="regsearch_$(@compiler_id@ChoiceProperty)"
-                Root="$(MinpackBuilderRegistryRoot)"
-                Key="$(ActiveCompilerRegistryKey)"
-                Name="Id"
-                Type="raw"/>
-        </Property>
-        
         <!-- Component to store information on registry about the installation directory of Minpack source code -->
         <Component Id="@compiler_id@MinpackSourceCodeDirRegistry" Guid="$(@compiler_id@MinpackSourceCodeDirRegistryGuid)">
             <RegistryKey
@@ -229,26 +216,6 @@
             <ComponentRef Id="@compiler_id@FeaturesToRemoveRegistry"/>
             <ComponentRef Id="@compiler_id@InstallDirRegistry"/>
         </ComponentGroup>
-        
-        <!-- Custom actions to read the property from / save the property to registry -->
-        <CustomAction 
-            Id="SaveChoice.@compiler_id@"
-            Property="CMDLINE_$(@compiler_id@ChoiceProperty)"
-            Value="[$(@compiler_id@ChoiceProperty)]"
-            Execute="firstSequence"/>
-        <CustomAction 
-            Id="SetChoice.@compiler_id@.FromCmdLine"
-            Property="$(@compiler_id@ChoiceProperty)"
-            Value="[CMDLINE_$(@compiler_id@ChoiceProperty)]" 
-            Execute="firstSequence"/>
-        <InstallUISequence>
-            <Custom Action="SaveChoice.@compiler_id@" Before="AppSearch"/>
-            <Custom Action="SetChoice.@compiler_id@.FromCmdLine" After="AppSearch" Condition="CMDLINE_$(@compiler_id@ChoiceProperty)"/>
-        </InstallUISequence>
-        <InstallExecuteSequence>
-            <Custom Action="SaveChoice.@compiler_id@" Before="AppSearch"/>
-            <Custom Action="SetChoice.@compiler_id@.FromCmdLine" After="AppSearch" Condition="CMDLINE_$(@compiler_id@ChoiceProperty)"/>
-        </InstallExecuteSequence>
-        
+
     </Fragment>
 </Wix>
